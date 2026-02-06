@@ -1,0 +1,739 @@
+/* Etch WP Menus - Admin Builder Styles */
+
+:root {
+  /* Primary Colors */
+  --wp-blue: #0073aa;
+  --wp-blue-hover: #005177;
+  --wp-blue-light: #00a0d2;
+  
+  /* Greys */
+  --wp-grey-0: #ffffff;
+  --wp-grey-1: #f9f9f9;
+  --wp-grey-2: #f0f0f1;
+  --wp-grey-3: #dcdcde;
+  --wp-grey-4: #8c8f94;
+  --wp-grey-5: #50575e;
+  --wp-grey-6: #2c3338;
+  
+  /* Feedback Colors */
+  --wp-success: #00a32a;
+  --wp-warning: #dba617;
+  --wp-error: #d63638;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  
+  /* Font Sizes */
+  --font-size-xl: 24px;
+  --font-size-lg: 18px;
+  --font-size-md: 14px;
+  --font-size-sm: 13px;
+  --font-size-xs: 12px;
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+}
+
+/* Main Container */
+.etch-admin-wrap {
+  max-width: 1200px;
+  margin: var(--spacing-xl) auto;
+  padding: 0 var(--spacing-lg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.etch-admin-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.etch-admin-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--wp-grey-6);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.etch-admin-description {
+  font-size: var(--font-size-md);
+  color: var(--wp-grey-4);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Layout */
+.etch-layout {
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: flex-start;
+}
+
+.etch-layout__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.etch-layout__sidebar {
+  width: 320px;
+  position: sticky;
+  top: var(--spacing-lg);
+}
+
+/* Card Component */
+.etch-card {
+  background: var(--wp-grey-1);
+  border: 1px solid var(--wp-grey-2);
+  border-radius: 4px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.etch-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--wp-grey-3);
+}
+
+.etch-card__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--wp-grey-6);
+  margin: 0;
+}
+
+.etch-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Form Fields */
+.etch-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.etch-field__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--wp-grey-6);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.etch-field__help {
+  font-size: var(--font-size-xs);
+  color: var(--wp-grey-4);
+  margin: var(--spacing-xs) 0 0 0;
+  line-height: 1.5;
+}
+
+.etch-field__help code {
+  background: var(--wp-grey-2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.etch-field__input {
+  padding: 8px 12px;
+  border: 1px solid var(--wp-grey-3);
+  border-radius: 4px;
+  font-size: var(--font-size-md);
+  color: var(--wp-grey-6);
+  transition: border-color 0.2s;
+  max-width: 200px;
+}
+
+.etch-field__input:focus {
+  outline: none;
+  border-color: var(--wp-blue);
+  box-shadow: 0 0 0 1px var(--wp-blue);
+}
+
+/* Radio Button Group */
+.etch-radio-group {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.etch-radio {
+  position: relative;
+}
+
+.etch-radio input {
+  position: absolute;
+  opacity: 0;
+}
+
+.etch-radio__label {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid var(--wp-grey-3);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--wp-grey-5);
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.etch-radio input:checked + .etch-radio__label {
+  background: var(--wp-blue);
+  color: white;
+  border-color: var(--wp-blue);
+}
+
+.etch-radio input:focus + .etch-radio__label {
+  box-shadow: 0 0 0 2px var(--wp-blue-light);
+}
+
+.etch-radio__label:hover {
+  border-color: var(--wp-grey-4);
+}
+
+.etch-radio input:checked + .etch-radio__label:hover {
+  background: var(--wp-blue-hover);
+  border-color: var(--wp-blue-hover);
+}
+
+/* Toggle Switch */
+.etch-toggles-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.etch-toggle-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.etch-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.etch-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.etch-toggle__slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--wp-grey-3);
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.etch-toggle__slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.etch-toggle input:checked + .etch-toggle__slider {
+  background-color: var(--wp-blue);
+}
+
+.etch-toggle input:checked + .etch-toggle__slider:before {
+  transform: translateX(20px);
+}
+
+.etch-toggle input:focus + .etch-toggle__slider {
+  box-shadow: 0 0 0 2px var(--wp-blue-light);
+}
+
+.etch-toggle-label {
+  font-size: var(--font-size-md);
+  color: var(--wp-grey-6);
+  cursor: pointer;
+}
+
+/* Button Styles */
+.etch-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 10px 20px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.etch-button--primary {
+  background: var(--wp-blue);
+  color: white;
+}
+
+.etch-button--primary:hover {
+  background: var(--wp-blue-hover);
+}
+
+.etch-button--secondary {
+  background: white;
+  color: var(--wp-grey-6);
+  border: 1px solid var(--wp-grey-3);
+}
+
+.etch-button--secondary:hover {
+  background: var(--wp-grey-1);
+  border-color: var(--wp-grey-4);
+}
+
+.etch-button--large {
+  padding: 12px 24px;
+  font-size: var(--font-size-lg);
+}
+
+.etch-actions {
+  margin-top: var(--spacing-lg);
+  text-align: center;
+}
+
+/* Animation Preview */
+.etch-animation-preview {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  background: white;
+  border-radius: 4px;
+  margin-top: var(--spacing-md);
+}
+
+.etch-preview-hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.etch-preview-line {
+  width: 2rem;
+  height: 0.25rem;
+  background-color: var(--wp-grey-6);
+  border-radius: 10px;
+  transition: all 0.3s linear;
+  transform-origin: 1px;
+}
+
+.etch-preview-hamburger:hover .etch-preview-line {
+  background-color: var(--wp-blue);
+}
+
+/* Tabs */
+.etch-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  border-bottom: 2px solid var(--wp-grey-2);
+  margin-bottom: var(--spacing-lg);
+  margin-top: var(--spacing-2xl);
+}
+
+.etch-tab {
+  padding: 12px 20px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--wp-grey-5);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.etch-tab:hover {
+  color: var(--wp-blue);
+}
+
+.etch-tab.is-active {
+  color: var(--wp-blue);
+  border-bottom-color: var(--wp-blue);
+}
+
+/* Badge for recommended tab */
+.etch-tab__badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--wp-blue);
+  color: white;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Highlight recommended tab */
+.etch-tab:first-child {
+  background: rgba(0, 115, 170, 0.05);
+  border-radius: 4px 4px 0 0;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.etch-tab:first-child:hover {
+  background: rgba(0, 115, 170, 0.1);
+}
+
+.etch-tab-content {
+  display: none;
+}
+
+.etch-tab-content.is-active {
+  display: block;
+}
+
+/* Code Block */
+.etch-code-block {
+  position: relative;
+  background: var(--wp-grey-6);
+  border-radius: 4px;
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md) 0;
+}
+
+.etch-code-block__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.etch-code-block__label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--wp-grey-4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.etch-code-block__copy {
+  padding: 6px 12px;
+  font-size: var(--font-size-sm);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.etch-code-block__copy:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.etch-code-block__copy.copied {
+  background: var(--wp-success);
+  border-color: var(--wp-success);
+}
+
+.etch-code-block pre {
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #f8f8f2;
+}
+
+.etch-code-block code {
+  font-family: inherit;
+}
+
+/* Quick Start Content */
+.etch-quickstart-content {
+  font-size: var(--font-size-md);
+  line-height: 1.8;
+  color: var(--wp-grey-6);
+}
+
+.etch-quickstart-content h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
+  color: var(--wp-grey-6);
+}
+
+.etch-quickstart-content h3 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+  color: var(--wp-grey-5);
+}
+
+.etch-quickstart-content ul,
+.etch-quickstart-content ol {
+  margin: var(--spacing-sm) 0;
+  padding-left: var(--spacing-lg);
+}
+
+.etch-quickstart-content li {
+  margin-bottom: var(--spacing-sm);
+}
+
+.etch-quickstart-content code {
+  background: var(--wp-grey-2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: var(--font-size-sm);
+}
+
+.etch-quickstart-content strong {
+  font-weight: var(--font-weight-semibold);
+  color: var(--wp-grey-6);
+}
+
+/* Tips List */
+.etch-tips-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.etch-tips-list li {
+  padding-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  position: relative;
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--wp-grey-5);
+}
+
+.etch-tips-list li:before {
+  content: "💡";
+  position: absolute;
+  left: 0;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+  .etch-layout {
+    flex-direction: column;
+  }
+  
+  .etch-layout__sidebar {
+    width: 100%;
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .etch-admin-wrap {
+    padding: 0 var(--spacing-md);
+  }
+  
+  .etch-radio-group {
+    flex-direction: column;
+  }
+  
+  .etch-radio__label {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .etch-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .etch-tab {
+    white-space: nowrap;
+  }
+}
+
+/* Loading State */
+.etch-loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: etch-spin 0.6s linear infinite;
+}
+
+@keyframes etch-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Menu Selector */
+.etch-menu-selector-wrapper {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.etch-menu-select {
+  flex: 1;
+  max-width: none;
+}
+
+/* Properties Reference */
+.etch-properties-reference {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.etch-property-section-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--wp-grey-6);
+  margin: 0 0 var(--spacing-sm) 0;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--wp-grey-3);
+}
+
+.etch-property-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.etch-property-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.etch-property-list code {
+  background: var(--wp-grey-2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  color: var(--wp-blue);
+  font-weight: var(--font-weight-medium);
+}
+
+.etch-property-desc {
+  font-size: var(--font-size-xs);
+  color: var(--wp-grey-4);
+  padding-left: var(--spacing-sm);
+}
+
+/* Modal */
+.etch-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+}
+
+.etch-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.etch-modal__content {
+  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 800px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.etch-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--wp-grey-2);
+}
+
+.etch-modal__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--wp-grey-6);
+  margin: 0;
+}
+
+.etch-modal__close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--wp-grey-4);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.etch-modal__close:hover {
+  background: var(--wp-grey-2);
+  color: var(--wp-grey-6);
+}
+
+.etch-modal__body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+}
+
+.etch-modal__description {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--wp-grey-5);
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+}
