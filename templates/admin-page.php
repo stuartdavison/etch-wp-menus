@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="etch-layout">
         <div class="etch-layout__main">
             <form id="nav-builder-form">
-                
+
                 <!-- Section 0: WordPress Menu Selection -->
                 <div class="etch-card">
                     <div class="etch-card__header">
@@ -50,13 +50,13 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <p class="etch-field__help">
                                 <?php esc_html_e( 'Select the WordPress menu to use for navigation. The menu slug will be used in the generated code.', 'etch-wp-menus' ); ?>
                                 <br>
-                                <strong><?php esc_html_e( 'No menus?', 'etch-wp-menus' ); ?></strong> 
+                                <strong><?php esc_html_e( 'No menus?', 'etch-wp-menus' ); ?></strong>
                                 <a href="<?php echo esc_url( admin_url( 'nav-menus.php' ) ); ?>" target="_blank"><?php esc_html_e( 'Create one here', 'etch-wp-menus' ); ?></a>
                             </p>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Section 1: Choose Approach -->
                 <div class="etch-card">
                     <div class="etch-card__header">
@@ -79,188 +79,232 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 <strong>Component:</strong> Uses props for reusable parts with <code>{#loop props.propertyName as item}</code>
                             </p>
                         </div>
-                        
+
                         <div class="etch-field etch-component-settings" style="display: none;">
                             <label for="component-prop-name" class="etch-field__label">
                                 <?php esc_html_e( 'Component Property Name', 'etch-wp-menus' ); ?>
                             </label>
-                            <input 
-                                type="text" 
-                                id="component-prop-name" 
-                                name="component_prop_name" 
+                            <input
+                                type="text"
+                                id="component-prop-name"
+                                name="component_prop_name"
                                 class="etch-field__input"
                                 value="menuItems"
                                 placeholder="menuItems">
                             <p class="etch-field__help">
-                                <?php esc_html_e( 'What will you call the property in your ETCH component? This generates', 'etch-wp-menus' ); ?> 
+                                <?php esc_html_e( 'What will you call the property in your ETCH component? This generates', 'etch-wp-menus' ); ?>
                                 <code>{#loop props.<span id="prop-name-preview">menuItems</span> as item}</code>
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 2: Basic Configuration -->
+                <!-- Section 2: Basic Settings -->
                 <div class="etch-card">
                     <div class="etch-card__header">
                         <h2 class="etch-card__title"><?php esc_html_e( 'Basic Settings', 'etch-wp-menus' ); ?></h2>
                     </div>
                     <div class="etch-card__body">
                         <div class="etch-field">
-                            <label for="mobile-breakpoint" class="etch-field__label">
-                                <?php esc_html_e( 'Mobile Breakpoint (px)', 'etch-wp-menus' ); ?>
+                            <label for="submenu-depth-desktop" class="etch-field__label">
+                                <?php esc_html_e( 'Sub Menu Depth on Desktop', 'etch-wp-menus' ); ?>
                             </label>
-                            <input 
-                                type="number" 
-                                id="mobile-breakpoint" 
-                                name="mobile_breakpoint" 
+                            <input
+                                type="number"
+                                id="submenu-depth-desktop"
+                                name="submenu_depth_desktop"
                                 class="etch-field__input"
-                                value="1200" 
-                                min="320" 
-                                max="1920" 
+                                value="1"
+                                min="0"
+                                max="5"
                                 step="1">
                             <p class="etch-field__help">
-                                <?php esc_html_e( 'When should navigation switch to mobile view?', 'etch-wp-menus' ); ?>
+                                <?php esc_html_e( 'How many levels of sub menus to render on desktop. 0 = no sub menus, 1 = one level deep, etc.', 'etch-wp-menus' ); ?>
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 3: Hamburger Animation -->
+                <!-- Section 3: Mobile Menu Support (Optional) -->
                 <div class="etch-card">
                     <div class="etch-card__header">
-                        <h2 class="etch-card__title"><?php esc_html_e( 'Hamburger Animation', 'etch-wp-menus' ); ?></h2>
+                        <h2 class="etch-card__title"><?php esc_html_e( 'Mobile Menu Support', 'etch-wp-menus' ); ?></h2>
                     </div>
                     <div class="etch-card__body">
                         <div class="etch-field">
-                            <label class="etch-field__label">
-                                <?php esc_html_e( 'Animation Type', 'etch-wp-menus' ); ?>
-                            </label>
-                            <div class="etch-radio-group">
-                                <div class="etch-radio">
-                                    <input type="radio" id="anim-spin" name="hamburger_animation" value="spin" checked>
-                                    <label for="anim-spin" class="etch-radio__label">Spin</label>
+                            <div class="etch-toggle-item">
+                                <label class="etch-toggle">
+                                    <input type="checkbox" id="mobile-menu-support" name="mobile_menu_support" value="1">
+                                    <span class="etch-toggle__slider"></span>
+                                </label>
+                                <span class="etch-toggle-label"><?php esc_html_e( 'Add Mobile Menu Support', 'etch-wp-menus' ); ?></span>
+                            </div>
+                            <p class="etch-field__help">
+                                <?php esc_html_e( 'Enable this to include hamburger menu, mobile breakpoint, and responsive navigation in the generated output.', 'etch-wp-menus' ); ?>
+                            </p>
+                        </div>
+
+                        <div id="mobile-settings" class="etch-mobile-settings" style="display: none;">
+
+                            <div class="etch-field">
+                                <label for="mobile-breakpoint" class="etch-field__label">
+                                    <?php esc_html_e( 'Breakpoint (px)', 'etch-wp-menus' ); ?>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="mobile-breakpoint"
+                                    name="mobile_breakpoint"
+                                    class="etch-field__input"
+                                    value="1200"
+                                    min="320"
+                                    max="1920"
+                                    step="1">
+                                <p class="etch-field__help">
+                                    <?php esc_html_e( 'When should navigation switch to mobile view? Default: 1200px', 'etch-wp-menus' ); ?>
+                                </p>
+                            </div>
+
+                            <div class="etch-field">
+                                <label class="etch-field__label">
+                                    <?php esc_html_e( 'Hamburger Style', 'etch-wp-menus' ); ?>
+                                </label>
+                                <div class="etch-radio-group">
+                                    <div class="etch-radio">
+                                        <input type="radio" id="anim-spin" name="hamburger_animation" value="spin" checked>
+                                        <label for="anim-spin" class="etch-radio__label">Spin</label>
+                                    </div>
+                                    <div class="etch-radio">
+                                        <input type="radio" id="anim-squeeze" name="hamburger_animation" value="squeeze">
+                                        <label for="anim-squeeze" class="etch-radio__label">Squeeze</label>
+                                    </div>
+                                    <div class="etch-radio">
+                                        <input type="radio" id="anim-collapse" name="hamburger_animation" value="collapse">
+                                        <label for="anim-collapse" class="etch-radio__label">Collapse</label>
+                                    </div>
+                                    <div class="etch-radio">
+                                        <input type="radio" id="anim-arrow" name="hamburger_animation" value="arrow">
+                                        <label for="anim-arrow" class="etch-radio__label">Arrow</label>
+                                    </div>
                                 </div>
-                                <div class="etch-radio">
-                                    <input type="radio" id="anim-squeeze" name="hamburger_animation" value="squeeze">
-                                    <label for="anim-squeeze" class="etch-radio__label">Squeeze</label>
-                                </div>
-                                <div class="etch-radio">
-                                    <input type="radio" id="anim-collapse" name="hamburger_animation" value="collapse">
-                                    <label for="anim-collapse" class="etch-radio__label">Collapse</label>
-                                </div>
-                                <div class="etch-radio">
-                                    <input type="radio" id="anim-arrow" name="hamburger_animation" value="arrow">
-                                    <label for="anim-arrow" class="etch-radio__label">Arrow</label>
+
+                                <div class="etch-animation-preview">
+                                    <div class="etch-preview-hamburger">
+                                        <span class="etch-preview-line"></span>
+                                        <span class="etch-preview-line"></span>
+                                        <span class="etch-preview-line"></span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="etch-animation-preview">
-                            <div class="etch-preview-hamburger">
-                                <span class="etch-preview-line"></span>
-                                <span class="etch-preview-line"></span>
-                                <span class="etch-preview-line"></span>
+
+                            <div class="etch-field">
+                                <label class="etch-field__label">
+                                    <?php esc_html_e( 'Mobile Menu Position', 'etch-wp-menus' ); ?>
+                                </label>
+                                <div class="etch-radio-group">
+                                    <div class="etch-radio">
+                                        <input type="radio" id="pos-left" name="menu_position" value="left" checked>
+                                        <label for="pos-left" class="etch-radio__label">Left</label>
+                                    </div>
+                                    <div class="etch-radio">
+                                        <input type="radio" id="pos-right" name="menu_position" value="right">
+                                        <label for="pos-right" class="etch-radio__label">Right</label>
+                                    </div>
+                                    <div class="etch-radio">
+                                        <input type="radio" id="pos-top" name="menu_position" value="top">
+                                        <label for="pos-top" class="etch-radio__label">Top</label>
+                                    </div>
+                                    <div class="etch-radio">
+                                        <input type="radio" id="pos-full" name="menu_position" value="full">
+                                        <label for="pos-full" class="etch-radio__label">Full Overlay</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="etch-field">
+                                <label class="etch-field__label">
+                                    <?php esc_html_e( 'Sub Menu Behaviour', 'etch-wp-menus' ); ?>
+                                </label>
+                                <div class="etch-radio-group">
+                                    <div class="etch-radio">
+                                        <input type="radio" id="sub-always" name="submenu_behavior" value="always">
+                                        <label for="sub-always" class="etch-radio__label">Always Show</label>
+                                    </div>
+                                    <div class="etch-radio">
+                                        <input type="radio" id="sub-accordion" name="submenu_behavior" value="accordion" checked>
+                                        <label for="sub-accordion" class="etch-radio__label">Accordion</label>
+                                    </div>
+                                    <div class="etch-radio">
+                                        <input type="radio" id="sub-clickable" name="submenu_behavior" value="clickable">
+                                        <label for="sub-clickable" class="etch-radio__label">Clickable</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="etch-field">
+                                <label for="submenu-depth-mobile" class="etch-field__label">
+                                    <?php esc_html_e( 'Sub Menu Depth on Mobile', 'etch-wp-menus' ); ?>
+                                </label>
+                                <input
+                                    type="number"
+                                    id="submenu-depth-mobile"
+                                    name="submenu_depth_mobile"
+                                    class="etch-field__input"
+                                    value="1"
+                                    min="0"
+                                    max="5"
+                                    step="1">
+                                <p class="etch-field__help">
+                                    <?php esc_html_e( 'How many levels of sub menus to render on mobile. 0 = no sub menus, 1 = one level deep, etc.', 'etch-wp-menus' ); ?>
+                                </p>
+                            </div>
+
+                            <div class="etch-field">
+                                <label class="etch-field__label">
+                                    <?php esc_html_e( 'Close Options', 'etch-wp-menus' ); ?>
+                                </label>
+                                <div class="etch-toggles-group">
+                                    <div class="etch-toggle-item">
+                                        <label class="etch-toggle">
+                                            <input type="checkbox" name="close_methods[]" value="hamburger" checked>
+                                            <span class="etch-toggle__slider"></span>
+                                        </label>
+                                        <span class="etch-toggle-label">Click hamburger again</span>
+                                    </div>
+                                    <div class="etch-toggle-item">
+                                        <label class="etch-toggle">
+                                            <input type="checkbox" name="close_methods[]" value="outside" checked>
+                                            <span class="etch-toggle__slider"></span>
+                                        </label>
+                                        <span class="etch-toggle-label">Click outside menu</span>
+                                    </div>
+                                    <div class="etch-toggle-item">
+                                        <label class="etch-toggle">
+                                            <input type="checkbox" name="close_methods[]" value="esc" checked>
+                                            <span class="etch-toggle__slider"></span>
+                                        </label>
+                                        <span class="etch-toggle-label">Press ESC key</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 4: Mobile Menu Behavior -->
-                <div class="etch-card">
-                    <div class="etch-card__header">
-                        <h2 class="etch-card__title"><?php esc_html_e( 'Mobile Menu', 'etch-wp-menus' ); ?></h2>
-                    </div>
-                    <div class="etch-card__body">
-                        <div class="etch-field">
-                            <label class="etch-field__label">
-                                <?php esc_html_e( 'Menu Position', 'etch-wp-menus' ); ?>
-                            </label>
-                            <div class="etch-radio-group">
-                                <div class="etch-radio">
-                                    <input type="radio" id="pos-left" name="menu_position" value="left" checked>
-                                    <label for="pos-left" class="etch-radio__label">Left</label>
-                                </div>
-                                <div class="etch-radio">
-                                    <input type="radio" id="pos-right" name="menu_position" value="right">
-                                    <label for="pos-right" class="etch-radio__label">Right</label>
-                                </div>
-                                <div class="etch-radio">
-                                    <input type="radio" id="pos-top" name="menu_position" value="top">
-                                    <label for="pos-top" class="etch-radio__label">Top</label>
-                                </div>
-                                <div class="etch-radio">
-                                    <input type="radio" id="pos-full" name="menu_position" value="full">
-                                    <label for="pos-full" class="etch-radio__label">Full Overlay</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="etch-field">
-                            <label class="etch-field__label">
-                                <?php esc_html_e( 'Submenu Behavior', 'etch-wp-menus' ); ?>
-                            </label>
-                            <div class="etch-radio-group">
-                                <div class="etch-radio">
-                                    <input type="radio" id="sub-always" name="submenu_behavior" value="always">
-                                    <label for="sub-always" class="etch-radio__label">Always Show</label>
-                                </div>
-                                <div class="etch-radio">
-                                    <input type="radio" id="sub-accordion" name="submenu_behavior" value="accordion" checked>
-                                    <label for="sub-accordion" class="etch-radio__label">Accordion</label>
-                                </div>
-                                <div class="etch-radio">
-                                    <input type="radio" id="sub-clickable" name="submenu_behavior" value="clickable">
-                                    <label for="sub-clickable" class="etch-radio__label">Clickable</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="etch-field">
-                            <label class="etch-field__label">
-                                <?php esc_html_e( 'Close Options', 'etch-wp-menus' ); ?>
-                            </label>
-                            <div class="etch-toggles-group">
-                                <div class="etch-toggle-item">
-                                    <label class="etch-toggle">
-                                        <input type="checkbox" name="close_methods[]" value="hamburger" checked>
-                                        <span class="etch-toggle__slider"></span>
-                                    </label>
-                                    <span class="etch-toggle-label">Click hamburger again</span>
-                                </div>
-                                <div class="etch-toggle-item">
-                                    <label class="etch-toggle">
-                                        <input type="checkbox" name="close_methods[]" value="outside" checked>
-                                        <span class="etch-toggle__slider"></span>
-                                    </label>
-                                    <span class="etch-toggle-label">Click outside menu</span>
-                                </div>
-                                <div class="etch-toggle-item">
-                                    <label class="etch-toggle">
-                                        <input type="checkbox" name="close_methods[]" value="esc" checked>
-                                        <span class="etch-toggle__slider"></span>
-                                    </label>
-                                    <span class="etch-toggle-label">Press ESC key</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section 5: Accessibility -->
+                <!-- Section 4: Accessibility -->
                 <div class="etch-card">
                     <div class="etch-card__header">
                         <h2 class="etch-card__title"><?php esc_html_e( 'Accessibility Features', 'etch-wp-menus' ); ?></h2>
                     </div>
                     <div class="etch-card__body">
                         <div class="etch-toggles-group">
-                            <div class="etch-toggle-item">
+                            <div class="etch-toggle-item etch-mobile-only-setting" style="display: none;">
                                 <label class="etch-toggle">
                                     <input type="checkbox" name="accessibility[]" value="focus_trap" checked>
                                     <span class="etch-toggle__slider"></span>
                                 </label>
                                 <span class="etch-toggle-label">Focus trap in mobile menu</span>
                             </div>
-                            <div class="etch-toggle-item">
+                            <div class="etch-toggle-item etch-mobile-only-setting" style="display: none;">
                                 <label class="etch-toggle">
                                     <input type="checkbox" name="accessibility[]" value="scroll_lock" checked>
                                     <span class="etch-toggle__slider"></span>
@@ -296,20 +340,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
         <!-- Sidebar -->
         <div class="etch-layout__sidebar">
-            <div class="etch-card">
-                <div class="etch-card__header">
-                    <h3 class="etch-card__title"><?php esc_html_e( 'Quick Tips', 'etch-wp-menus' ); ?></h3>
-                </div>
-                <div class="etch-card__body">
-                    <ul class="etch-tips-list">
-                        <li><?php esc_html_e( 'Direct Loop works great for traditional WordPress sites', 'etch-wp-menus' ); ?></li>
-                        <li><?php esc_html_e( 'Component approach is best for headless/decoupled architectures', 'etch-wp-menus' ); ?></li>
-                        <li><?php esc_html_e( 'Test your breakpoint on different devices', 'etch-wp-menus' ); ?></li>
-                        <li><?php esc_html_e( 'All CSS is nested to avoid conflicts', 'etch-wp-menus' ); ?></li>
-                    </ul>
-                </div>
-            </div>
-            
             <div class="etch-card">
                 <div class="etch-card__header">
                     <h3 class="etch-card__title"><?php esc_html_e( 'Loop Properties', 'etch-wp-menus' ); ?></h3>
@@ -351,8 +381,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             </button>
             <button class="etch-tab" data-tab="html">HTML</button>
             <button class="etch-tab" data-tab="css">CSS</button>
-            <button class="etch-tab" data-tab="javascript">JavaScript</button>
-            <button class="etch-tab" data-tab="quickstart">Quick Start</button>
+            <button class="etch-tab etch-tab--js" data-tab="javascript" style="display: none;">JavaScript</button>
         </div>
 
         <div class="etch-tab-content" data-content="html">
@@ -375,7 +404,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             </div>
         </div>
 
-        <div class="etch-tab-content" data-content="javascript">
+        <div class="etch-tab-content etch-tab-content--js" data-content="javascript" style="display: none;">
             <div class="etch-code-block">
                 <div class="etch-code-block__header">
                     <span class="etch-code-block__label">JavaScript</span>
@@ -386,41 +415,12 @@ if ( ! defined( 'ABSPATH' ) ) {
         </div>
 
         <div class="etch-tab-content is-active" data-content="etch-json">
-            <div class="etch-card" style="background: #f0f6fc; border-color: #0073aa;">
-                <div class="etch-card__body">
-                    <h3 style="margin: 0 0 12px 0; color: #0073aa; font-size: 18px;">
-                        ⚡ <?php esc_html_e( 'Fastest Setup Method', 'etch-wp-menus' ); ?>
-                    </h3>
-                    <p style="margin-bottom: 16px;">
-                        <?php esc_html_e( 'Copy this complete JSON structure and paste it directly into ETCH\'s Structure Panel. Everything (HTML, CSS, and JavaScript) is included in one import!', 'etch-wp-menus' ); ?>
-                    </p>
-                    <ol style="margin: 0; padding-left: 24px; line-height: 1.8;">
-                        <li><?php esc_html_e( 'Click "Copy JSON" button below', 'etch-wp-menus' ); ?></li>
-                        <li><?php esc_html_e( 'Go to ETCH → Structure Panel', 'etch-wp-menus' ); ?></li>
-                        <li><?php esc_html_e( 'Click "Import" or "+" to add new block', 'etch-wp-menus' ); ?></li>
-                        <li><?php esc_html_e( 'Paste the JSON', 'etch-wp-menus' ); ?></li>
-                        <li><strong><?php esc_html_e( 'Done! Your navigation is ready', 'etch-wp-menus' ); ?></strong> ✅</li>
-                    </ol>
-                    <p style="margin: 16px 0 0 0; padding: 12px; background: white; border-radius: 4px; font-size: 13px;">
-                        <strong>💡 <?php esc_html_e( 'Why use ETCH JSON?', 'etch-wp-menus' ); ?></strong><br>
-                        <?php esc_html_e( 'Single copy-paste • No manual panel switching • Faster • Less error-prone', 'etch-wp-menus' ); ?>
-                    </p>
-                </div>
-            </div>
             <div class="etch-code-block">
                 <div class="etch-code-block__header">
                     <span class="etch-code-block__label">ETCH Structure JSON</span>
                     <button class="etch-code-block__copy" data-copy="etch-json">Copy JSON</button>
                 </div>
                 <pre><code id="etch-json-output"></code></pre>
-            </div>
-        </div>
-
-        <div class="etch-tab-content" data-content="quickstart">
-            <div class="etch-card">
-                <div class="etch-card__body">
-                    <div id="quickstart-output" class="etch-quickstart-content"></div>
-                </div>
             </div>
         </div>
     </div>
@@ -432,7 +432,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="etch-modal__content">
         <div class="etch-modal__header">
             <h3 class="etch-modal__title"><?php esc_html_e( 'Menu JSON Structure', 'etch-wp-menus' ); ?></h3>
-            <button class="etch-modal__close" aria-label="Close">×</button>
+            <button class="etch-modal__close" aria-label="Close">&times;</button>
         </div>
         <div class="etch-modal__body">
             <p class="etch-modal__description">

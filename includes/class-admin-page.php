@@ -37,13 +37,16 @@ class Etch_Admin_Page {
      */
     public static function get_default_settings() {
         return array(
-            'approach'            => 'direct',
-            'mobile_breakpoint'   => 1200,
-            'hamburger_animation' => 'spin',
-            'menu_position'       => 'left',
-            'submenu_behavior'    => 'accordion',
-            'close_methods'       => array( 'hamburger', 'outside', 'esc' ),
-            'accessibility'       => array( 'focus_trap', 'scroll_lock', 'aria', 'keyboard' ),
+            'approach'              => 'direct',
+            'submenu_depth_desktop' => 1,
+            'mobile_menu_support'   => false,
+            'mobile_breakpoint'     => 1200,
+            'hamburger_animation'   => 'spin',
+            'menu_position'         => 'left',
+            'submenu_behavior'      => 'accordion',
+            'submenu_depth_mobile'  => 1,
+            'close_methods'         => array( 'hamburger', 'outside', 'esc' ),
+            'accessibility'         => array( 'focus_trap', 'scroll_lock', 'aria', 'keyboard' ),
         );
     }
 }

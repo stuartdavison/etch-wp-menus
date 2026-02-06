@@ -341,19 +341,22 @@
 .etch-preview-hamburger {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: center;
+  align-items: center;
   width: 2rem;
   height: 2rem;
   cursor: pointer;
+  gap: 5px;
 }
 
 .etch-preview-line {
+  display: block;
   width: 2rem;
-  height: 0.25rem;
+  height: 3px;
   background-color: var(--wp-grey-6);
-  border-radius: 10px;
-  transition: all 0.3s linear;
-  transform-origin: 1px;
+  border-radius: 3px;
+  transition: all 0.4s ease;
+  transform-origin: center center;
 }
 
 .etch-preview-hamburger:hover .etch-preview-line {
@@ -485,69 +488,14 @@
   font-family: inherit;
 }
 
-/* Quick Start Content */
-.etch-quickstart-content {
-  font-size: var(--font-size-md);
-  line-height: 1.8;
-  color: var(--wp-grey-6);
-}
-
-.etch-quickstart-content h2 {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  margin: var(--spacing-lg) 0 var(--spacing-md) 0;
-  color: var(--wp-grey-6);
-}
-
-.etch-quickstart-content h3 {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  margin: var(--spacing-md) 0 var(--spacing-sm) 0;
-  color: var(--wp-grey-5);
-}
-
-.etch-quickstart-content ul,
-.etch-quickstart-content ol {
-  margin: var(--spacing-sm) 0;
-  padding-left: var(--spacing-lg);
-}
-
-.etch-quickstart-content li {
-  margin-bottom: var(--spacing-sm);
-}
-
-.etch-quickstart-content code {
-  background: var(--wp-grey-2);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: var(--font-size-sm);
-}
-
-.etch-quickstart-content strong {
-  font-weight: var(--font-weight-semibold);
-  color: var(--wp-grey-6);
-}
-
-/* Tips List */
-.etch-tips-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.etch-tips-list li {
-  padding-left: var(--spacing-lg);
-  margin-bottom: var(--spacing-md);
-  position: relative;
-  font-size: var(--font-size-sm);
-  line-height: 1.6;
-  color: var(--wp-grey-5);
-}
-
-.etch-tips-list li:before {
-  content: "💡";
-  position: absolute;
-  left: 0;
+/* Mobile Settings */
+.etch-mobile-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--wp-grey-2);
+  margin-top: var(--spacing-sm);
 }
 
 /* Responsive */

@@ -3,7 +3,7 @@
  * Plugin Name: Etch WP Menus
  * Plugin URI: https://bbg.digital
  * Description: Generate customizable navigation code for the ETCH theme builder with mobile breakpoints and nested CSS.
- * Version: 1.3.0
+ * Version: 1.4.0
  * Author: Stuart Davison
  * Author URI: https://bbg.digital
  * License: GPL v2 or later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'ETCH_WP_MENUS_VERSION', '1.3.0' );
+define( 'ETCH_WP_MENUS_VERSION', '1.4.0' );
 define( 'ETCH_WP_MENUS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ETCH_WP_MENUS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -155,7 +155,6 @@ class Etch_WP_Menus {
             'html'       => $generator->generate_html( $settings ),
             'css'        => $generator->generate_css( $settings ),
             'javascript' => $generator->generate_javascript( $settings ),
-            'quickstart' => $generator->generate_quickstart( $settings ),
             'etch_json'  => $generator->generate_etch_json( $settings ),
         );
         
