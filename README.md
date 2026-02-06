@@ -1,205 +1,99 @@
 # Etch WP Menus
 
-Generate customizable navigation code for the ETCH theme builder with mobile breakpoints and nested CSS.
+Generate customizable navigation code for the ETCH theme builder with mobile breakpoints, accordion submenus, and comprehensive accessibility.
 
 ## Description
 
-Etch WP Menus is a WordPress plugin that provides an intuitive interface for generating professional navigation code tailored specifically for the ETCH theme builder. With support for mobile breakpoints, multiple animation styles, and comprehensive accessibility features, this plugin streamlines the process of creating beautiful, functional navigation menus.
+Etch WP Menus is a WordPress plugin that provides an intuitive admin interface for generating professional navigation code tailored for the ETCH theme builder by Digital Gravy. It outputs four code formats: HTML, CSS, JavaScript, and ETCH JSON (a complete block tree with styles and script ready to paste into ETCH's Structure Panel).
+
+## Version
+
+**Current:** 2.0.0
 
 ## Features
 
 - **Two Implementation Approaches**:
-  - **Direct Loop**: Binds directly to WordPress menus using `{#loop options.menus.global_navigation}`
-  - **Component**: Creates reusable components with `{#loop props.menuItems as item}`
+  - **Direct Loop**: Binds to WordPress menus via `{#loop options.menus.{slug} as item}`
+  - **Component**: Reusable components via `{#loop props.menuItems as item}`
 
-- **Customizable Mobile Breakpoints**: Set custom breakpoints (320-1920px) for when navigation switches to mobile view
+- **ETCH JSON Block Tree**: Generates complete `etch/element`, `etch/loop`, `etch/condition`, and `etch/text` blocks — fully editable in the ETCH Structure Panel
 
-- **Four Hamburger Animations**:
-  - Spin (rotate to X)
-  - Squeeze (compress to arrow)
-  - Collapse (vertical stack)
-  - Arrow (left/right point)
+- **Pre-computed State Classes**: `item.state_classes` provides BEM modifier classes (`is-current`, `is-current-parent`, `has-submenu`) for each menu item
 
-- **Four Menu Positions**:
-  - Left slide
-  - Right slide
-  - Top dropdown
-  - Full overlay
+- **Dynamic Container Class**: Customizable CSS class prefix (default: `global-nav`)
 
-- **Submenu Behaviors**:
-  - Always show
-  - Accordion
-  - Clickable
+- **Customizable Mobile Breakpoints**: 320px - 1920px range (default: 1200px)
 
-- **Accessibility Features**:
-  - Focus trap in mobile menu
-  - Body scroll lock
-  - ARIA labels
-  - Keyboard navigation support
+- **Four Hamburger Animations**: Spin, Squeeze, Collapse, Arrow
 
-- **Professional Code Output**:
-  - Fully nested CSS (BEM methodology)
-  - Clean, commented HTML
-  - Vanilla JavaScript (no dependencies)
-  - Copy-to-clipboard functionality
+- **Four Menu Positions**: Left slide, Right slide, Top dropdown, Full overlay
+
+- **Three Submenu Behaviors** (mobile only — desktop always uses hover):
+  - **Always Show**: Submenus expanded by default
+  - **Accordion**: Click chevron toggle to expand/collapse (with animated chevron)
+  - **Clickable**: Parent links navigate, submenus hidden on mobile
+
+- **Mobile UI**:
+  - No default background colours (user-controlled via ETCH)
+  - Box shadow only appears when menu is open (no bleed when off-screen)
+  - Menu aligned below hamburger with top offset
+  - Submenu links inset with dash prefix
+  - Chevron toggle button for accordion mode
+
+- **Accessibility**: Focus trap, scroll lock, ARIA labels, keyboard navigation, ESC to close
+
+- **Dual CSS Output**: SCSS-nested (CSS tab) and flat individual styles (ETCH JSON)
 
 ## Installation
 
-1. Download the plugin ZIP file
-2. In WordPress Admin, go to **Plugins → Add New → Upload Plugin**
-3. Upload the ZIP file and click **Install Now**
-4. Click **Activate Plugin**
-5. Navigate to **Tools → Etch WP Menus**
+1. Download `etch-wp-menus.zip`
+2. Upload via **Plugins > Add New > Upload Plugin**
+3. Activate and navigate to **Tools > Etch WP Menus**
 
-## Usage
+## Documentation
 
-### Quick Start
-
-1. **Configure Settings**:
-   - Choose your implementation approach (Direct Loop or Component)
-   - Set your mobile breakpoint
-   - Select hamburger animation style
-   - Choose menu position and behavior
-
-2. **Generate Code**:
-   - Click **Generate Navigation Code**
-   - Four tabs will appear with your code: HTML, CSS, JavaScript, and Quick Start
-
-3. **Copy to ETCH**:
-   - Copy the HTML to ETCH's HTML Panel
-   - Copy the CSS to ETCH's CSS Panel
-   - Copy the JavaScript to ETCH's JavaScript Panel
-
-### Direct Loop Approach
-
-Best for traditional WordPress sites where you want navigation to automatically sync with WordPress menus.
-
-**Steps**:
-1. Go to WordPress Admin → Appearance → Menus
-2. Create a menu called "Global Navigation"
-3. Add menu items and save
-4. Generate code using "Direct Loop" approach
-5. Paste code into ETCH panels
-
-The navigation will automatically pull from your WordPress menu.
-
-### Component Approach
-
-Best for headless/decoupled architectures where you want reusable components with flexible data sources.
-
-**Steps**:
-1. Generate code using "Component" approach
-2. Create a new component in ETCH
-3. Paste the HTML code
-4. Use the provided props schema
-5. Pass menu data when using the component
-
-Example:
-```html
-<Navigation menuItems={customMenuData} />
-```
+- [Quick Reference](docs/QUICK-REFERENCE.md) - CSS classes, JS API, field names
+- [Installation Guide](docs/INSTALLATION.md) - Detailed setup instructions
+- [Component Props Guide](docs/COMPONENT-PROPS-GUIDE.md) - Data flow for component approach
+- [Build Guide](docs/BUILD-GUIDE.md) - Comprehensive architecture reference for developers
+- [Build Summary](docs/BUILD-SUMMARY.md) - Original project build overview
 
 ## Requirements
 
-- WordPress 5.8 or higher
-- PHP 7.4 or higher
-- ETCH Theme (any version)
+- WordPress 5.8+
+- PHP 7.4+
+- ETCH Theme Builder
 
-## CSS Architecture
+## How It Works
 
-All CSS is fully nested under `.global-nav` to avoid conflicts:
+### WordPress Data Integration
 
-```css
-.global-nav {
-  &__container { }
-  &__hamburger { }
-  &__menu { }
-  &__menu-list { }
-  &__menu-item { }
-  &__menu-link { }
-  &__submenu { }
-}
+The plugin hooks into `etch/dynamic_data/option` to inject hierarchical menu data:
+
+```
+options.menus.{menu_slug} → array of menu items with children, state_classes, etc.
 ```
 
-This ensures zero conflicts with existing styles in your ETCH theme.
+WordPress's `_wp_menu_item_classes_by_context()` is called on the frontend to detect current page, parent, and ancestor states.
 
-## JavaScript Features
+### Code Generation
 
-The generated JavaScript includes:
-- Hamburger menu toggle
-- Body scroll lock (when menu is open)
-- Focus trap (keyboard accessibility)
-- Click outside to close
-- ESC key to close
-- Submenu accordion (on mobile)
-- ARIA attribute management
+The admin UI generates four outputs:
 
-All features are modular and can be enabled/disabled via the admin interface.
-
-## Customization
-
-After generating the code, you can customize:
-- Colors in the CSS
-- Font sizes and weights
-- Spacing and padding
-- Transition speeds
-- Menu width (for side menus)
-
-The code is clean, well-commented, and easy to modify.
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile Safari (iOS)
-- Chrome Mobile (Android)
-
-## Accessibility
-
-The generated navigation includes:
-- Proper ARIA labels and roles
-- Keyboard navigation support
-- Focus management
-- Screen reader friendly
-- WCAG AA compliant color contrast
+1. **HTML** — ETCH template syntax with loops and conditionals
+2. **CSS** — SCSS-nested BEM styles with responsive breakpoints
+3. **JavaScript** — Vanilla JS IIFE with hamburger, accordion, scroll lock, focus trap
+4. **ETCH JSON** — Complete block tree with embedded styles and base64-encoded script
 
 ## Support
 
-For support, feature requests, or bug reports:
-- Visit: https://bbg.digital/support
-- Email: support@bbg.digital
-
-## Changelog
-
-### Version 1.0.0
-- Initial release
-- Two implementation approaches (Direct Loop and Component)
-- Four hamburger animations
-- Four menu positions
-- Customizable mobile breakpoint
-- Full accessibility features
-- Copy-to-clipboard functionality
-
-## Credits
-
-**Author**: Stuart Davison  
-**Plugin URI**: https://bbg.digital  
-**License**: GPL v2 or later
+**Website:** https://bbg.digital
+**Email:** support@bbg.digital
 
 ## License
 
-This plugin is licensed under the GPL v2 or later.
+GPL v2 or later
 
-```
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+## Credits
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-```
+**Author**: Stuart Davison | BBG Digital

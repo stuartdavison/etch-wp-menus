@@ -106,6 +106,21 @@ if ( ! defined( 'ABSPATH' ) ) {
                     </div>
                     <div class="etch-card__body">
                         <div class="etch-field">
+                            <label for="container-class" class="etch-field__label">
+                                <?php esc_html_e( 'Container Class', 'etch-wp-menus' ); ?>
+                            </label>
+                            <input
+                                type="text"
+                                id="container-class"
+                                name="container_class"
+                                class="etch-field__input"
+                                value=""
+                                placeholder="global-nav">
+                            <p class="etch-field__help">
+                                <?php esc_html_e( 'The base CSS class used in the generated output. Defaults to the selected menu name in kebab-case (e.g. "Global Navigation" becomes "global-navigation"). Change this to avoid duplicate CSS when generating multiple menus.', 'etch-wp-menus' ); ?>
+                            </p>
+                        </div>
+                        <div class="etch-field">
                             <label for="submenu-depth-desktop" class="etch-field__label">
                                 <?php esc_html_e( 'Sub Menu Depth on Desktop', 'etch-wp-menus' ); ?>
                             </label>
@@ -347,23 +362,16 @@ if ( ! defined( 'ABSPATH' ) ) {
                 <div class="etch-card__body">
                     <div class="etch-properties-reference">
                         <div class="etch-property-section">
-                            <h4 class="etch-property-section-title"><?php esc_html_e( 'Direct Loop', 'etch-wp-menus' ); ?></h4>
+                            <h4 class="etch-property-section-title"><?php esc_html_e( 'Available Properties', 'etch-wp-menus' ); ?></h4>
                             <ul class="etch-property-list">
                                 <li><code>item.title</code> <span class="etch-property-desc">Menu item label</span></li>
                                 <li><code>item.url</code> <span class="etch-property-desc">Link URL</span></li>
-                                <li><code>item.current</code> <span class="etch-property-desc">Is active page</span></li>
+                                <li><code>item.current</code> <span class="etch-property-desc">Is current page</span></li>
+                                <li><code>item.current_parent</code> <span class="etch-property-desc">Is ancestor of current page</span></li>
+                                <li><code>item.state_classes</code> <span class="etch-property-desc">Pre-computed BEM state classes (is-current, is-current-parent, has-submenu)</span></li>
                                 <li><code>item.children</code> <span class="etch-property-desc">Submenu items</span></li>
-                                <li><code>item.classes</code> <span class="etch-property-desc">CSS classes</span></li>
+                                <li><code>item.classes</code> <span class="etch-property-desc">WordPress CSS classes</span></li>
                                 <li><code>item.target</code> <span class="etch-property-desc">Link target</span></li>
-                            </ul>
-                        </div>
-                        <div class="etch-property-section">
-                            <h4 class="etch-property-section-title"><?php esc_html_e( 'Component', 'etch-wp-menus' ); ?></h4>
-                            <ul class="etch-property-list">
-                                <li><code>item.label</code> <span class="etch-property-desc">Menu item label</span></li>
-                                <li><code>item.url</code> <span class="etch-property-desc">Link URL</span></li>
-                                <li><code>item.active</code> <span class="etch-property-desc">Is active page</span></li>
-                                <li><code>item.children</code> <span class="etch-property-desc">Submenu items</span></li>
                             </ul>
                         </div>
                     </div>

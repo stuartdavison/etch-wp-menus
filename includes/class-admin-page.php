@@ -38,6 +38,7 @@ class Etch_Admin_Page {
     public static function get_default_settings() {
         return array(
             'approach'              => 'direct',
+            'container_class'       => '',
             'submenu_depth_desktop' => 1,
             'mobile_menu_support'   => false,
             'mobile_breakpoint'     => 1200,

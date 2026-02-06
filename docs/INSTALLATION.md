@@ -34,7 +34,7 @@
 
 After activation, you should see:
 - A new menu item under **Tools → Etch WP Menus**
-- Version 1.0.0 in the plugins list
+- Version 2.0.0 in the plugins list
 
 ---
 
@@ -389,6 +389,6 @@ If you encounter issues not covered here:
 
 ---
 
-**Last Updated**: February 5, 2026  
-**Plugin Version**: 1.0.0  
+**Last Updated**: February 6, 2026
+**Plugin Version**: 2.0.0
 **Author**: Stuart Davison | BBG Digital

@@ -108,8 +108,10 @@ The plugin provides this structure to ETCH:
         "title": "Home",
         "url": "/",
         "target": "",
-        "classes": "menu-item-home",
-        "current": false,
+        "classes": "menu-item-home current-menu-item",
+        "current": true,
+        "current_parent": false,
+        "state_classes": "is-current",
         "children": []
       },
       {
@@ -119,6 +121,8 @@ The plugin provides this structure to ETCH:
         "target": "",
         "classes": "menu-item menu-item-has-children",
         "current": false,
+        "current_parent": false,
+        "state_classes": "has-submenu",
         "children": [
           {
             "id": 125,
@@ -127,6 +131,8 @@ The plugin provides this structure to ETCH:
             "target": "",
             "classes": "",
             "current": false,
+            "current_parent": false,
+            "state_classes": "",
             "children": []
           }
         ]
@@ -135,6 +141,12 @@ The plugin provides this structure to ETCH:
   }
 }
 ```
+
+### Key Fields
+- **`state_classes`**: Pre-computed BEM modifier classes (`is-current`, `is-current-parent`, `has-submenu`) — used directly in ETCH block tree attributes via `{item.state_classes}`
+- **`current`**: Boolean — true if this is the current page
+- **`current_parent`**: Boolean — true if this is an ancestor of the current page
+- **`children`**: Array of child menu items (same structure, recursive)
 
 ## Technical Details
 

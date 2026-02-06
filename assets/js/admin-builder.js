@@ -20,6 +20,8 @@
       this.jsonModal = $('#menu-json-modal');
       this.mobileToggle = $('#mobile-menu-support');
       this.mobileSettings = $('#mobile-settings');
+      this.containerClassInput = $('#container-class');
+      this.containerClassManuallySet = false;
 
       this.bindEvents();
       this.initAnimationPreview();
@@ -56,6 +58,11 @@
 
       // Component property name preview
       $('#component-prop-name').on('input', this.updatePropNamePreview.bind(this));
+
+      // Container class - track manual edits
+      this.containerClassInput.on('input', function() {
+        NavigationBuilder.containerClassManuallySet = true;
+      });
 
       // Mobile menu support toggle
       this.mobileToggle.on('change', this.handleMobileToggle.bind(this));
@@ -99,6 +106,7 @@
         menu_id: this.menuSelect.val(),
         approach: $('input[name="approach"]:checked').val(),
         component_prop_name: $('#component-prop-name').val(),
+        container_class: this.containerClassInput.val().trim(),
         submenu_depth_desktop: parseInt($('#submenu-depth-desktop').val()) || 1,
         mobile_menu_support: mobileEnabled,
         accessibility: accessibility
@@ -177,9 +185,30 @@
 
       if (menuId) {
         this.viewJsonButton.prop('disabled', false);
+
+        // Auto-populate container class from menu name if not manually set
+        if (!this.containerClassManuallySet || !this.containerClassInput.val().trim()) {
+          const menuName = this.menuSelect.find('option:selected').text();
+          const cssClass = this.menuNameToCssClass(menuName);
+          this.containerClassInput.val(cssClass);
+          this.containerClassManuallySet = false;
+        }
       } else {
         this.viewJsonButton.prop('disabled', true);
       }
+    },
+
+    /**
+     * Convert a menu name to a CSS class (kebab-case)
+     */
+    menuNameToCssClass: function(name) {
+      return name
+        .toLowerCase()
+        .trim()
+        .replace(/[\s_]+/g, '-')
+        .replace(/[^a-z0-9\-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
     },
 
     /**

@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:jonsuh.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:docs.etchwp.com)",
+      "WebFetch(domain:brendan-oconnell.com)",
+      "Bash(python3:*)",
+      "Bash(php -l:*)",
+      "Bash(grep:*)",
+      "Bash(wait:*)",
+      "Bash(tree:*)",
+      "Bash(/opt/homebrew/bin/php:*)",
+      "Bash(/usr/local/bin/php:*)"
     ]
   }
 }

@@ -3,7 +3,7 @@
  * Plugin Name: Etch WP Menus
  * Plugin URI: https://bbg.digital
  * Description: Generate customizable navigation code for the ETCH theme builder with mobile breakpoints and nested CSS.
- * Version: 1.4.0
+ * Version: 2.0.0
  * Author: Stuart Davison
  * Author URI: https://bbg.digital
  * License: GPL v2 or later
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants
-define( 'ETCH_WP_MENUS_VERSION', '1.4.0' );
+define( 'ETCH_WP_MENUS_VERSION', '2.0.0' );
 define( 'ETCH_WP_MENUS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'ETCH_WP_MENUS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
@@ -216,25 +216,36 @@ class Etch_WP_Menus {
             if ( ! $menu_items ) {
                 continue;
             }
-            
+
+            // Let WordPress compute current-menu-item, current-menu-parent,
+            // current-menu-ancestor classes on each menu item.
+            // This only works on the frontend where $wp_query is populated.
+            if ( ! is_admin() ) {
+                _wp_menu_item_classes_by_context( $menu_items );
+            }
+
             // Build hierarchical menu structure
             $menu_tree = array();
             $menu_by_id = array();
-            
+
             // First pass: Create flat array indexed by ID
+            // Use WordPress's native current/parent/ancestor detection from the classes array
             foreach ( $menu_items as $item ) {
+                $classes = is_array( $item->classes ) ? $item->classes : array();
                 $menu_by_id[ $item->ID ] = array(
-                    'id'       => $item->ID,
-                    'title'    => $item->title,
-                    'url'      => $item->url,
-                    'target'   => $item->target,
-                    'classes'  => implode( ' ', $item->classes ),
-                    'current'  => false, // Will be set dynamically by ETCH
-                    'children' => array(),
+                    'id'             => $item->ID,
+                    'title'          => $item->title,
+                    'url'            => $item->url,
+                    'target'         => $item->target,
+                    'classes'        => implode( ' ', array_filter( $classes ) ),
+                    'current'        => in_array( 'current-menu-item', $classes, true ),
+                    'current_parent' => in_array( 'current-menu-parent', $classes, true )
+                                     || in_array( 'current-menu-ancestor', $classes, true ),
+                    'children'       => array(),
                 );
             }
-            
-            // Second pass: Build hierarchy
+
+            // Build hierarchy
             foreach ( $menu_items as $item ) {
                 if ( $item->menu_item_parent == 0 ) {
                     // Top-level item
@@ -246,7 +257,24 @@ class Etch_WP_Menus {
                     }
                 }
             }
-            
+
+            // Third pass: Compute state_classes after hierarchy is built
+            // These are pre-computed BEM modifier classes for use in ETCH templates
+            foreach ( $menu_by_id as &$menu_item ) {
+                $state = array();
+                if ( ! empty( $menu_item['current'] ) ) {
+                    $state[] = 'is-current';
+                }
+                if ( ! empty( $menu_item['current_parent'] ) ) {
+                    $state[] = 'is-current-parent';
+                }
+                if ( ! empty( $menu_item['children'] ) ) {
+                    $state[] = 'has-submenu';
+                }
+                $menu_item['state_classes'] = implode( ' ', $state );
+            }
+            unset( $menu_item );
+
             // Add this menu to the menus array
             $data['menus'][ $menu_slug ] = $menu_tree;
         }
