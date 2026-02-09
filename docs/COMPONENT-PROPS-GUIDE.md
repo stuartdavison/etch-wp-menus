@@ -111,7 +111,8 @@ The plugin provides this structure to ETCH:
         "classes": "menu-item-home current-menu-item",
         "current": true,
         "current_parent": false,
-        "state_classes": "is-current",
+        "state_classes": "",
+        "link_classes": "current-page",
         "children": []
       },
       {
@@ -123,6 +124,7 @@ The plugin provides this structure to ETCH:
         "current": false,
         "current_parent": false,
         "state_classes": "has-submenu",
+        "link_classes": "",
         "children": [
           {
             "id": 125,
@@ -133,6 +135,7 @@ The plugin provides this structure to ETCH:
             "current": false,
             "current_parent": false,
             "state_classes": "",
+            "link_classes": "",
             "children": []
           }
         ]
@@ -143,7 +146,8 @@ The plugin provides this structure to ETCH:
 ```
 
 ### Key Fields
-- **`state_classes`**: Pre-computed BEM modifier classes (`is-current`, `is-current-parent`, `has-submenu`) — used directly in ETCH block tree attributes via `{item.state_classes}`
+- **`state_classes`**: Pre-computed utility classes for `<li>` elements (`has-submenu`, `current-parent`) — used directly in ETCH block tree attributes via `{item.state_classes}`
+- **`link_classes`**: Pre-computed utility classes for `<a>` elements (`current-page`) — used via `{item.link_classes}`
 - **`current`**: Boolean — true if this is the current page
 - **`current_parent`**: Boolean — true if this is an ancestor of the current page
 - **`children`**: Array of child menu items (same structure, recursive)

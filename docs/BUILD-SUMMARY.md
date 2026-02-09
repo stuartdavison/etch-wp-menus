@@ -1,18 +1,19 @@
 # Etch WP Menus - Project Build Summary
 
-## 🎯 Project Overview
+## Project Overview
 
-**Plugin Name:** Etch WP Menus  
-**Version:** 1.0.0  
-**Author:** Stuart Davison  
-**Build Date:** February 5, 2026  
-**Status:** ✅ Complete and Ready for Production
+**Plugin Name:** Etch WP Menus
+**Version:** 3.0.0
+**Author:** Stuart Davison
+**Original Build Date:** February 5, 2026
+**Last Updated:** February 9, 2026
+**Status:** Complete and Ready for Production
 
-## 📦 What's Included
+## What's Included
 
-This WordPress plugin generates professional, customizable navigation code specifically designed for the ETCH theme builder. It provides a beautiful admin interface where users can configure every aspect of their navigation menu and receive production-ready HTML, CSS, and JavaScript code.
+This WordPress plugin generates professional, customizable navigation code specifically designed for the ETCH theme builder. It provides an admin interface where users can configure every aspect of their navigation menu and receive production-ready HTML, CSS, JavaScript, and ETCH JSON code.
 
-## 🏗️ Architecture
+## Architecture
 
 ### Core Components
 
@@ -20,135 +21,122 @@ This WordPress plugin generates professional, customizable navigation code speci
    - Plugin registration and initialization
    - Admin menu integration
    - Asset enqueuing
-   - AJAX handler for code generation
+   - AJAX handlers for code generation and menu JSON preview
+   - `etch/dynamic_data/option` filter — injects menu data with `state_classes` and `link_classes`
 
 2. **Navigation Generator** (`includes/class-navigation-generator.php`)
    - HTML generation (Direct Loop & Component approaches)
-   - CSS generation with nested structure
-   - JavaScript generation with modular features
-   - Quick start guide generation
+   - CSS generation with CSS custom properties and native nesting
+   - JavaScript generation (ES6 `class AccessibleNavigation`)
+   - ETCH JSON block tree generation with embedded styles and base64-encoded script
 
 3. **Admin Page Handler** (`includes/class-admin-page.php`)
    - Settings page rendering
    - Default configuration management
 
 4. **Admin Template** (`templates/admin-page.php`)
-   - Modern, WordPress-native UI
+   - WordPress-native admin UI
    - Toggle switches, radio buttons, form fields
-   - Tabbed output interface
+   - Tabbed output interface (ETCH JSON, HTML, CSS, JS)
 
 5. **Frontend Assets**
-   - `assets/css/admin-builder.css` - Modern admin styling
-   - `assets/js/admin-builder.js` - Interactive functionality
+   - `assets/css/admin-builder.css` — Admin styling
+   - `assets/js/admin-builder.js` — Admin interaction and hamburger preview
 
-## ✨ Key Features Implemented
+## Key Features
 
 ### Implementation Approaches
-- ✅ **Direct Loop:** WordPress menu integration
-- ✅ **Component:** Reusable component with props
+- **Direct Loop:** WordPress menu integration via `{#loop options.menus.{slug} as item}`
+- **Component:** Reusable component via `{#loop props.menuItems as item}`
 
 ### Customization Options
-- ✅ Mobile breakpoint (320-1920px, default 1200px)
-- ✅ Four hamburger animations (Spin, Squeeze, Collapse, Arrow)
-- ✅ Four menu positions (Left, Right, Top, Full Overlay)
-- ✅ Three submenu behaviors (Always Show, Accordion, Clickable)
-- ✅ Multiple close methods (Hamburger, Outside Click, ESC key)
+- CSS custom properties (`:root` tokens) for all styling
+- Mobile breakpoint (320-1920px, default 1200px)
+- Dynamic container class prefix (default: `global-navigation`)
+- Three hamburger animations (Spin, Squeeze, Collapse)
+- Three menu positions (Left, Right, Top)
+- Two submenu behaviours — mobile only (Accordion, Slide)
+- Desktop always uses hover-reveal with configurable delay
 
-### Accessibility Features
-- ✅ Focus trap in mobile menu
-- ✅ Body scroll lock
-- ✅ ARIA labels and roles
-- ✅ Keyboard navigation support
-- ✅ Screen reader compatibility
+### Navigation Features
+- Hamburger inside `<nav>`, sibling of `__menu` wrapper — stays visible when menu slides
+- `__menu` wrapper div gets `position: fixed` + `transform` on mobile (not the nav)
+- `data-position` and `data-behavior` attributes on `<nav>` (not modifier classes — ETCH strips them)
+- Desktop hover-activated dropdowns with delay (media-query wrapped to prevent mobile leak)
+- Smart edge detection (auto-cascades left near viewport edge)
+- Accordion mode with animated chevron rotation
+- Slide mode with horizontal panel navigation and back buttons
+- Pre-computed `state_classes` (for `<li>`) and `link_classes` (for `<a>`)
 
-### User Experience
-- ✅ Live animation preview
-- ✅ Copy-to-clipboard functionality
-- ✅ Tabbed code output (HTML, CSS, JS, Quick Start)
-- ✅ Beautiful, modern WordPress-native UI
-- ✅ Responsive admin interface
-- ✅ Helpful tooltips and descriptions
+### Accessibility (WCAG 2.1 Level AA)
+- Full keyboard navigation (Arrow keys, Enter, Escape)
+- Proper ARIA attributes (`aria-haspopup`, `aria-expanded`, `aria-current`)
+- Focus management (menu open/close, submenu transitions)
+- Focus trap in mobile menu
+- Body scroll lock
+- Screen reader optimised with `role="menubar"`, `role="menu"`, `role="menuitem"`
 
-## 🎨 Design System
+### Code Output
+- **HTML** — ETCH template syntax with loops and conditionals
+- **CSS** — CSS custom properties + native nesting with responsive breakpoints
+- **JavaScript** — ES6 class with slide mode, desktop hover, edge detection, keyboard nav
+- **ETCH JSON** — Complete block tree with embedded styles and base64-encoded script
 
-### Colors
-Following WordPress standards:
-- Primary: #0073aa (WordPress Blue)
-- Greys: #f9f9f9 to #2c3338 (WordPress Grey Scale)
-- Success: #00a32a
-- Error: #d63638
+## ETCH JSON Block Tree (v3)
 
-### Typography
-- Font Family: System fonts (Apple, Segoe UI, Roboto)
-- Sizes: 12px to 24px scale
-- Weights: 400, 500, 600
+```
+nav.global-navigation (root block)
+  ├── button.__hamburger (position: absolute, z-index: 1001)
+  └── div.__menu (position: fixed + transform on mobile, .is-open slides it in)
+      └── ul.__list
+          └── loop → li.__item
+              ├── a.__link
+              ├── condition → button.__submenu-toggle > span.__submenu-icon
+              └── condition → ul.__sub-menu → loop (recursive)
+```
 
-### Components
-- Modern toggle switches (iOS-style)
-- Pill-style radio buttons
-- Clean card-based layouts
-- Professional code blocks with syntax
+## ETCH-Specific Constraints Discovered
 
-## 📋 Generated Code Features
+1. **Selector deduplication**: ETCH only renders the LAST style with a given selector. All CSS for `.global-navigation` must be in ONE style entry (`nav-all`).
+2. **CSS wrapping**: ETCH wraps the `css` field inside the `selector`, creating descendant selectors. Plain properties apply to the element itself; nested selectors become descendants.
+3. **Class stripping**: ETCH controls the `class` attribute via its styles system. Modifier classes added to elements get stripped. Use `data-*` attributes instead.
+4. **No `&` CSS nesting**: ETCH outputs `&` literally. Use full BEM selectors in flat styles.
 
-### HTML Output
-- Semantic, accessible markup
-- ARIA labels and roles
-- BEM-style class naming
-- Clean, indented structure
-- Comments for clarity
-
-### CSS Output
-- Fully nested under `.global-nav`
-- BEM methodology throughout
-- Mobile-first responsive
-- Custom breakpoint integration
-- Smooth animations
-- Zero conflicts with existing styles
-
-### JavaScript Output
-- Vanilla JS (no dependencies)
-- Modular, feature-based
-- Event delegation
-- Performance optimized
-- ES6+ syntax
-- Comprehensive error handling
-
-## 📁 File Structure
+## File Structure
 
 ```
 etch-wp-menus/
-├── etch-wp-menus.php                    # Main plugin file (152 lines)
+├── etch-wp-menus.php                    # Main plugin file
 ├── includes/
-│   ├── class-navigation-generator.php   # Code generator (680 lines)
-│   └── class-admin-page.php             # Admin handler (43 lines)
+│   ├── class-navigation-generator.php   # Code generation engine
+│   └── class-admin-page.php             # Admin handler
 ├── assets/
 │   ├── css/
-│   │   └── admin-builder.css            # Admin styles (561 lines)
+│   │   └── admin-builder.css            # Admin styles
 │   └── js/
-│       └── admin-builder.js             # Admin JavaScript (282 lines)
+│       └── admin-builder.js             # Admin JavaScript
 ├── templates/
-│   └── admin-page.php                   # Admin UI template (216 lines)
-├── README.md                            # Main documentation
-├── INSTALLATION.md                      # Detailed installation guide
-├── QUICK-REFERENCE.md                   # Developer quick reference
-└── .gitignore                           # Git ignore rules
-
-Total Lines of Code: ~1,934 lines
+│   └── admin-page.php                   # Admin UI template
+├── docs/
+│   ├── QUICK-REFERENCE.md              # CSS classes, JS API, field names
+│   ├── INSTALLATION.md                 # Setup guide
+│   ├── COMPONENT-PROPS-GUIDE.md        # Component data flow
+│   ├── BUILD-GUIDE.md                  # Architecture reference
+│   └── BUILD-SUMMARY.md               # This file
+├── README.md
+└── CHANGELOG.md
 ```
 
-## 🔧 Technical Specifications
+## Technical Specifications
 
 ### WordPress Requirements
 - **Minimum WordPress Version:** 5.8+
 - **Minimum PHP Version:** 7.4+
+- **Required:** ETCH Theme Builder
 - **Required Capabilities:** `manage_options`
 
 ### Browser Support
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+- Chrome, Firefox, Safari, Edge (latest)
 - Mobile browsers (iOS Safari, Chrome Mobile)
 
 ### Security Features
@@ -156,183 +144,23 @@ Total Lines of Code: ~1,934 lines
 - Capability checks
 - Data sanitization
 - XSS prevention
-- SQL injection prevention (not applicable - no database)
 
-## 🎯 Use Cases
+## Version History
 
-### Direct Loop Approach
-Perfect for:
-- Traditional WordPress sites
-- Content managed by non-developers
-- Sites with frequently changing menus
-- Simple WordPress menu integration
+- **v1.0.0** (Feb 5, 2026) — Initial release
+- **v2.0.0** (Feb 6, 2026) — ETCH JSON block tree, pre-computed state_classes, dual CSS architecture
+- **v3.0.0** (Feb 9, 2026) — CSS custom properties, ES6 class, slide/accordion modes, __menu wrapper pattern, data attributes, ETCH constraint workarounds
 
-### Component Approach
-Perfect for:
-- Headless WordPress
-- JAMstack architecture
-- Sites using REST API or GraphQL
-- Design systems
-- Multiple navigation instances
+## Support
 
-## 📊 Code Quality
+**Website:** https://bbg.digital
+**Email:** support@bbg.digital
+**Documentation:** Included in plugin `docs/` directory
 
-### Standards Compliance
-- ✅ WordPress Coding Standards
-- ✅ PHP_CodeSniffer compatible
-- ✅ BEM methodology for CSS
-- ✅ ESLint compatible JavaScript
-- ✅ WCAG AA accessibility
+## License
 
-### Best Practices
-- ✅ Object-oriented PHP
-- ✅ Single Responsibility Principle
-- ✅ DRY (Don't Repeat Yourself)
-- ✅ Comprehensive inline documentation
-- ✅ Semantic versioning
-
-## 🚀 Performance
-
-### Optimizations
-- Assets only loaded on plugin admin page
-- Minification-ready code structure
-- Efficient DOM queries
-- Event delegation
-- Debounced inputs where appropriate
-- No external dependencies
-
-### Load Times
-- Admin page: < 100ms
-- Asset loading: < 50ms
-- Code generation: < 200ms
-- Total footprint: ~23KB (compressed)
-
-## 📱 Responsive Design
-
-### Admin Interface
-- Desktop: Full two-column layout
-- Tablet: Stacked layout
-- Mobile: Single column, optimized touch targets
-
-### Generated Navigation
-- Desktop: Horizontal menu with dropdowns
-- Mobile: Hamburger with slide-in menu
-- Smooth transitions at custom breakpoint
-- Touch-friendly targets
-
-## ♿ Accessibility
-
-### Admin Interface
-- Keyboard navigable
-- Focus indicators
-- Screen reader labels
-- Sufficient color contrast
-- Skip links
-
-### Generated Navigation
-- ARIA landmarks
-- Keyboard navigation
-- Focus management
-- Screen reader announcements
-- High contrast mode support
-
-## 🧪 Testing Checklist
-
-All features tested and verified:
-- ✅ Plugin activation/deactivation
-- ✅ Admin page rendering
-- ✅ Form validation
-- ✅ Code generation (both approaches)
-- ✅ Copy to clipboard
-- ✅ Tab switching
-- ✅ Animation preview
-- ✅ Responsive layout
-- ✅ AJAX functionality
-- ✅ Error handling
-- ✅ Browser compatibility
-- ✅ Mobile device testing
-
-## 📚 Documentation
-
-Comprehensive documentation included:
-1. **README.md** - Main plugin documentation
-2. **INSTALLATION.md** - Step-by-step installation and usage
-3. **QUICK-REFERENCE.md** - Developer quick reference
-4. Inline code comments throughout
-5. Quick Start guide in generated output
-
-## 🔄 Future Enhancement Possibilities
-
-Potential Phase 2 features:
-- Color picker for visual customization
-- Typography controls
-- Spacing adjusters
-- Animation speed controls
-- Preset library
-- Export/import settings
-- Live preview iframe
-- Mega menu builder
-- Sticky header options
-- Search integration
-
-## 💾 Installation
-
-### For End Users
-1. Download `etch-wp-menus.zip`
-2. Upload via WordPress Admin → Plugins → Add New
-3. Activate and navigate to Tools → Etch WP Menus
-
-### For Developers
-```bash
-# Clone or extract to plugins directory
-wp-content/plugins/etch-wp-menus/
-
-# Activate via WP-CLI
-wp plugin activate etch-wp-menus
-```
-
-## 🎓 Learning Resources
-
-Users can refer to:
-- Quick Start tab (in generated output)
-- INSTALLATION.md (detailed guide)
-- QUICK-REFERENCE.md (developer reference)
-- Inline help text throughout admin interface
-- Code comments in generated output
-
-## 📞 Support
-
-**Website:** https://bbg.digital  
-**Email:** support@bbg.digital  
-**Documentation:** Included in plugin files
-
-## 📜 License
-
-GPL v2 or later - freely distributable and modifiable
-
-## ✅ Project Status
-
-**Build Status:** Complete ✅  
-**Testing Status:** Verified ✅  
-**Documentation Status:** Complete ✅  
-**Ready for Production:** Yes ✅
-
-## 🎉 Conclusion
-
-This plugin successfully delivers on all requirements from the build document:
-- Two implementation approaches (Direct Loop & Component)
-- Customizable mobile breakpoints
-- Four hamburger animations
-- Four menu positions
-- Complete accessibility support
-- Beautiful, modern admin interface
-- Production-ready code output
-- Comprehensive documentation
-
-The plugin is ready for deployment and use in production WordPress sites with the ETCH theme builder.
+GPL v2 or later
 
 ---
 
-**Built with ❤️ by Stuart Davison | BBG Digital**  
-**Build Date:** February 5, 2026  
-**Version:** 1.0.0
+**Built by Stuart Davison | BBG Digital**

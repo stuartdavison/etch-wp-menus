@@ -196,10 +196,6 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         <input type="radio" id="anim-collapse" name="hamburger_animation" value="collapse">
                                         <label for="anim-collapse" class="etch-radio__label">Collapse</label>
                                     </div>
-                                    <div class="etch-radio">
-                                        <input type="radio" id="anim-arrow" name="hamburger_animation" value="arrow">
-                                        <label for="anim-arrow" class="etch-radio__label">Arrow</label>
-                                    </div>
                                 </div>
 
                                 <div class="etch-animation-preview">
@@ -228,10 +224,6 @@ if ( ! defined( 'ABSPATH' ) ) {
                                         <input type="radio" id="pos-top" name="menu_position" value="top">
                                         <label for="pos-top" class="etch-radio__label">Top</label>
                                     </div>
-                                    <div class="etch-radio">
-                                        <input type="radio" id="pos-full" name="menu_position" value="full">
-                                        <label for="pos-full" class="etch-radio__label">Full Overlay</label>
-                                    </div>
                                 </div>
                             </div>
 
@@ -241,16 +233,12 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 </label>
                                 <div class="etch-radio-group">
                                     <div class="etch-radio">
-                                        <input type="radio" id="sub-always" name="submenu_behavior" value="always">
-                                        <label for="sub-always" class="etch-radio__label">Always Show</label>
-                                    </div>
-                                    <div class="etch-radio">
                                         <input type="radio" id="sub-accordion" name="submenu_behavior" value="accordion" checked>
                                         <label for="sub-accordion" class="etch-radio__label">Accordion</label>
                                     </div>
                                     <div class="etch-radio">
-                                        <input type="radio" id="sub-clickable" name="submenu_behavior" value="clickable">
-                                        <label for="sub-clickable" class="etch-radio__label">Clickable</label>
+                                        <input type="radio" id="sub-slide" name="submenu_behavior" value="slide">
+                                        <label for="sub-slide" class="etch-radio__label">Slide</label>
                                     </div>
                                 </div>
                             </div>
@@ -368,7 +356,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 <li><code>item.url</code> <span class="etch-property-desc">Link URL</span></li>
                                 <li><code>item.current</code> <span class="etch-property-desc">Is current page</span></li>
                                 <li><code>item.current_parent</code> <span class="etch-property-desc">Is ancestor of current page</span></li>
-                                <li><code>item.state_classes</code> <span class="etch-property-desc">Pre-computed BEM state classes (is-current, is-current-parent, has-submenu)</span></li>
+                                <li><code>item.state_classes</code> <span class="etch-property-desc">Classes for &lt;li&gt; (has-submenu, current-parent)</span></li>
+                                <li><code>item.link_classes</code> <span class="etch-property-desc">Classes for &lt;a&gt; (current-page)</span></li>
                                 <li><code>item.children</code> <span class="etch-property-desc">Submenu items</span></li>
                                 <li><code>item.classes</code> <span class="etch-property-desc">WordPress CSS classes</span></li>
                                 <li><code>item.target</code> <span class="etch-property-desc">Link target</span></li>

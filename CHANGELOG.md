@@ -2,6 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2026-02-09
+
+### Breaking Changes
+- **Default class prefix**: Changed from `global-nav` to `global-navigation`
+- **HTML structure**: `__menu` wrapper div re-introduced around `<ul>` — this is the panel that slides on mobile. Hamburger is a sibling of `__menu` inside `<nav>`.
+- **Hamburger position**: Inside `<nav>` as first child, positioned absolutely. Sibling of `__menu` so it stays visible when `__menu` slides off-screen.
+- **Class names renamed**: `__menu-list` > `__list`, `__menu-item` > `__item`, `__menu-link` > `__link`, `__submenu` > `__sub-menu`, `__submenu-item` > `__item` (shared), `__submenu-link` > `__link` (shared)
+- **State classes changed**: `is-current` removed from `state_classes`, `is-current-parent` > `current-parent`; new `link_classes` field with `current-page`
+- **Removed hamburger animation**: Arrow
+- **Removed menu position**: Full Overlay / Fullscreen
+- **Removed submenu behaviors**: Always Show, Clickable
+- **JavaScript pattern**: IIFE object literal > ES6 `class AccessibleNavigation`
+- **No modifier classes on `<nav>`**: ETCH strips extra classes. Position and behaviour stored as `data-position` and `data-behavior` attributes instead.
+- **`is-open` on `__menu`**: The `.is-open` class is now applied to the `__menu` wrapper div (not `<nav>`), since `__menu` is what slides.
+
+### Added
+- **`item.link_classes`**: New pre-computed field for `<a>` elements containing `current-page` when item is the active page
+- **Slide submenu mode**: Horizontal panel navigation with back buttons — JS builds flat panels from nested HTML at mobile breakpoint
+- **CSS Custom Properties**: All styling controlled via `:root` tokens (`--menu-clr-text`, `--menu-clr-text-accent`, `--menu-clr-bg`, `--menu-padding-x`, `--menu-padding-y`, `--menu-gap`, `--menu-toggle-size`, etc.)
+- **Desktop hover with delay**: `mouseenter`/`mouseleave` with configurable timeout, sibling close logic
+- **Edge detection**: JS checks nested submenus against viewport width, adds `.cascade-left` class for left-cascade
+- **Full keyboard navigation**: WCAG 2.1 Level AA — ArrowDown/Up navigate items, ArrowRight opens submenu, ArrowLeft closes, Escape closes menu
+- **`focus-within` submenu reveal**: Desktop submenus also revealed via `:focus-within` for keyboard accessibility
+- **`data-level` attributes**: Each `<li>` gets `data-level="1"`, `data-level="2"`, etc.
+- **`__submenu-icon` span**: Explicit chevron element inside toggle button (replaces CSS `::after` pseudo-element)
+- **`__back` / `__back-button` / `__back-icon`**: Slide mode back navigation elements
+- **`data-position` and `data-behavior` attributes**: On `<nav>` element (replaces modifier classes that ETCH strips)
+- **`__menu` wrapper div**: Wraps `<ul>`, receives `position: fixed` + `transform` on mobile. Hamburger is a sibling.
+- **`id` attribute on nav**: Enables `aria-controls` linkage from hamburger
+- **`.sr-only` utility class**: Screen reader only styles in CSS output
+- **`body.menu-open`**: Scroll lock utility class in CSS output
+- **`role="menu"`**: Added to submenu `<ul>` elements
+- **Multiple instance support**: ES6 class pattern allows multiple navigations on same page
+- **Responsive panel rebuild**: Slide mode panels automatically removed/rebuilt when resizing across breakpoint
+- **Desktop sub-menu styles media-query wrapped**: Hover dropdowns, positioning, and cascade styles are inside `@media (min-width)` so they don't leak into mobile
+
+### Changed
+- **`state_classes` format**: Now contains `has-submenu current-parent` (removed `is-current`, changed `is-current-parent` to `current-parent`)
+- **CSS architecture**: Switched from hardcoded values to CSS custom properties throughout
+- **Submenu indentation**: Mobile submenus use `padding-left: 40px` / `70px` instead of dash `::before` pseudo-element
+- **Accordion open class**: Changed from `.is-open` on `<li>` to `.__item--submenu-open` (BEM modifier, JS-managed)
+- **ETCH JSON block tree**: `nav > [hamburger, __menu > ul > loop > items]` — hamburger is first child of nav, sibling of `__menu`
+- **Version**: Bumped to 3.0.0
+
+### ETCH-Specific Discoveries
+- **ETCH deduplicates styles by selector**: Only the LAST style with a given selector survives. All CSS for a selector must be combined into ONE style entry.
+- **ETCH wraps `css` inside `selector`**: Creates descendant selectors. Plain properties target the element itself; nested selectors target descendants.
+- **ETCH strips extra classes**: Modifier classes on elements get removed. Use `data-*` attributes instead.
+- **CSS `&` nesting not supported**: ETCH outputs `&` literally. Use full BEM selectors.
+
 ## [2.0.0] - 2026-02-06
 
 ### Added
@@ -10,7 +60,7 @@ All notable changes to this project will be documented in this file.
 - **`is-current-parent` highlighting**: Current page ancestors now highlighted with the same colour as current page items, on both desktop and mobile
 - **Dynamic `container_class`**: Customizable CSS class prefix field (default: `global-nav`)
 - **Accordion chevron toggle**: Dedicated `<button class="__submenu-toggle">` with animated CSS chevron (rotates on open/close), replaces previous link-hijacking approach
-- **Submenu dash inset**: Mobile submenu links prefixed with em-dash (`—`) via `::before` pseudo-element for visual hierarchy
+- **Submenu dash inset**: Mobile submenu links prefixed with em-dash via `::before` pseudo-element for visual hierarchy
 - **ETCH flat styles**: Individual style objects for ETCH JSON output alongside SCSS-nested CSS tab
 - **Hamburger animation styles**: Flat ETCH style rules for all four hamburger animations
 - **Mobile responsive styles**: Complete `@media` block as flat ETCH style for responsive behaviour

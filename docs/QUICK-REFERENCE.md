@@ -12,7 +12,7 @@
 ### Direct Loop
 **Best for:** WordPress sites with WordPress menus
 **Data Source:** `options.menus.{menu_slug}`
-**Field Names:** `item.title`, `item.url`, `item.current`, `item.current_parent`, `item.state_classes`, `item.children`, `item.target`, `item.classes`
+**Field Names:** `item.title`, `item.url`, `item.current`, `item.current_parent`, `item.state_classes`, `item.link_classes`, `item.children`, `item.target`, `item.classes`
 
 ### Component
 **Best for:** Headless sites, reusable components
@@ -27,127 +27,150 @@
 - **What it does:** Width at which navigation switches to mobile view
 
 ### Container Class
-- **Default:** `global-nav`
+- **Default:** `global-navigation`
 - **What it does:** CSS class prefix for all BEM selectors
 
 ### Hamburger Animations
 - **Spin:** Rotates to X shape
-- **Squeeze:** Compresses to arrow
-- **Collapse:** Stacks vertically
-- **Arrow:** Points left/right
+- **Squeeze:** Compresses to X
+- **Collapse:** Stacks vertically to X
 
 ### Menu Positions
 - **Left:** Slides in from left side
 - **Right:** Slides in from right side
 - **Top:** Drops down from top
-- **Full:** Full-screen overlay
 
 ### Submenu Behaviors (Mobile Only)
-Desktop always uses hover-reveal regardless of this setting.
-- **Always Show:** Submenus expanded by default on mobile
-- **Accordion:** Click chevron toggle to expand/collapse
-- **Clickable:** Parent links navigate, submenus hidden on mobile
+Desktop always uses hover-reveal with delay regardless of this setting.
+- **Accordion:** Click chevron toggle to expand/collapse (with animated chevron rotation)
+- **Slide:** Horizontal panel navigation with back buttons (Netflix-style)
 
 ## Generated Code Structure
 
-### HTML
-```html
-<nav class="global-nav">
-  <div class="global-nav__container">
-    <button class="global-nav__hamburger">...</button>
-    <div class="global-nav__menu">
-      <ul class="global-nav__menu-list">
-        <!-- Menu items loop here -->
-        <li class="global-nav__menu-item has-submenu">
-          <a class="global-nav__menu-link">...</a>
-          <button class="global-nav__submenu-toggle"></button>
-          <ul class="global-nav__submenu">...</ul>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
+### ETCH JSON Block Tree
+```
+nav.global-navigation (root block, data-position, data-behavior attributes)
+  ├── button.__hamburger (absolutely positioned, stays visible on mobile)
+  └── div.__menu (slides off-screen on mobile via position:fixed + transform)
+      └── ul.__list
+          └── loop → menu items
+              └── li.__item
+                  ├── a.__link
+                  ├── condition → button.__submenu-toggle
+                  └── condition → ul.__sub-menu → loop (recursive)
 ```
 
 ### CSS Classes
 ```
-.global-nav                    /* Root container */
-.global-nav__container         /* Inner wrapper */
-.global-nav__hamburger         /* Hamburger button */
-.global-nav__hamburger-line    /* Hamburger lines (x3) */
-.global-nav__menu              /* Menu wrapper */
-.global-nav__menu-list         /* Menu <ul> */
-.global-nav__menu-item         /* Menu <li> */
-.global-nav__menu-link         /* Menu <a> links */
-.global-nav__submenu           /* Submenu <ul> */
-.global-nav__submenu-item      /* Submenu <li> */
-.global-nav__submenu-link      /* Submenu <a> links */
-.global-nav__submenu-toggle    /* Accordion chevron button */
+.global-navigation                    /* Root nav element */
+.global-navigation__hamburger         /* Hamburger button (inside nav, sibling of __menu) */
+.global-navigation__hamburger-line    /* Hamburger lines (x3) */
+.global-navigation__menu              /* Menu panel wrapper (slides on mobile) */
+.global-navigation__list              /* Menu <ul> */
+.global-navigation__item              /* Menu <li> (shared all levels) */
+.global-navigation__link              /* Menu <a> (shared all levels) */
+.global-navigation__sub-menu          /* Submenu <ul> */
+.global-navigation__submenu-toggle    /* Chevron toggle button */
+.global-navigation__submenu-icon      /* Chevron icon span */
+.global-navigation__back              /* Back button wrapper (slide mode) */
+.global-navigation__back-button       /* Back button element */
+.global-navigation__back-icon         /* Back chevron icon */
 
-/* State classes (applied via item.state_classes) */
-.is-current                    /* Current page */
-.is-current-parent             /* Ancestor of current page */
-.is-active                     /* Active state (on links) */
-.is-open                       /* Open menu/submenu */
-.has-submenu                   /* Item with children */
+/* Data attributes on <nav> (not modifier classes — ETCH strips classes) */
+data-position="left|right|top"        /* Menu position */
+data-behavior="accordion|slide"       /* Submenu behaviour */
+
+/* Utility classes (on <li> via item.state_classes) */
+.has-submenu                          /* Item with children */
+.current-parent                       /* Ancestor of current page */
+
+/* Utility classes (on <a> via item.link_classes) */
+.current-page                         /* Current page link */
+
+/* JS-managed classes */
+.is-open                              /* Menu panel open (on __menu) */
+.is-active                            /* Hamburger active state */
+.__item--submenu-open                 /* Accordion/desktop open submenu */
+.cascade-left                         /* Edge detection: cascade left */
+.menu-open                            /* Body scroll lock */
 ```
 
-### JavaScript API
+### JavaScript API (ES6 Class)
 ```javascript
-globalNav.init()                       // Initialize
-globalNav.toggleMenu()                 // Toggle mobile menu
-globalNav.lockScroll()                 // Lock body scroll
-globalNav.unlockScroll()               // Unlock body scroll
-globalNav.trapFocus()                  // Enable focus trap
-globalNav.releaseFocus()               // Disable focus trap
-globalNav.setupSubmenuAccordion()      // Bind accordion toggle buttons
+// Automatically initialized on DOMContentLoaded
+const nav = new AccessibleNavigation(navElement);
+
+// Key properties
+nav.nav                          // The <nav> element
+nav.menu                         // The __menu wrapper div
+nav.hamburger                    // The hamburger button
+
+// Instance methods
+nav.toggleMenu()                 // Toggle mobile menu
+nav.openMenu()                   // Open mobile menu (adds .is-open to __menu)
+nav.closeMenu()                  // Close mobile menu
+nav.checkMobile()                // Check if below breakpoint
+nav.setupSlideMode()             // Build/rebuild slide panels
+nav.setupDesktopHover()          // Setup hover with delay
+nav.checkSubMenuEdges()          // Desktop edge detection
+nav.setupKeyboardNavigation()    // Full WCAG keyboard nav
+nav.handleAccordionToggle(e)     // Toggle accordion submenu
 ```
 
 ## Quick Customization
 
-### Colors
+### Colors (via CSS Custom Properties)
 ```css
-.global-nav__menu-link { color: #2c3338; }
-.global-nav__menu-link:hover { color: #0073aa; }
-```
-
-### Mobile Menu Background
-No default background is set. Add your own:
-```css
-@media (max-width: 1200px) {
-  .global-nav__menu { background: white; }
+:root {
+  --menu-clr-text: #2c3338;
+  --menu-clr-text-accent: #0073aa;
+  --menu-clr-bg: #ffffff;
+  --menu-clr-bg-accent: #f0f0f1;
+  --menu-clr-bg-hover: #f9f9f9;
 }
 ```
 
 ### Mobile Menu Width
 ```css
-@media (max-width: 1200px) {
-  .global-nav__menu { width: 300px; }
+:root {
+  --menu-mobile-width: 320px;
+}
+```
+
+### Spacing
+```css
+:root {
+  --menu-padding-x: 1.25rem;
+  --menu-padding-y: 0.75rem;
+  --menu-gap: 0.5rem;
+  --menu-padding-top: 80px;
+}
+```
+
+### Transitions
+```css
+:root {
+  --menu-transition-duration: 0.2s;
+  --menu-transition-easing: ease-in-out;
+  --menu-hover-delay: 0.15s;
 }
 ```
 
 ### Sticky Navigation
 ```css
-.global-nav {
+.global-navigation {
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 ```
 
-### Change Hamburger Color
-```css
-.global-nav__hamburger-line {
-  background-color: #your-color;
-}
-```
+## ETCH-Specific Gotchas
 
-### Change Chevron Color
-```css
-.global-nav__submenu-toggle::after {
-  border-color: #your-color;
-}
-```
+1. **Selector deduplication**: ETCH only renders the LAST style with a given selector. Never create two styles with the same selector.
+2. **CSS wrapping**: ETCH wraps `css` inside `selector`, creating descendant selectors. Plain properties target the element itself.
+3. **No `&` nesting**: ETCH outputs `&` literally. Use full BEM selectors in `css` fields.
+4. **Class stripping**: ETCH controls the `class` attribute via styles. Extra classes on elements get stripped. Use `data-*` attributes for runtime state.
 
 ## Hooks & Filters
 
@@ -184,5 +207,5 @@ etch-wp-menus/
 
 **Website:** https://bbg.digital
 **Support:** support@bbg.digital
-**Version:** 2.0.0
+**Version:** 3.0.0
 **License:** GPL v2 or later

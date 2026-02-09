@@ -11,7 +11,9 @@
       "Bash(wait:*)",
       "Bash(tree:*)",
       "Bash(/opt/homebrew/bin/php:*)",
-      "Bash(/usr/local/bin/php:*)"
+      "Bash(/usr/local/bin/php:*)",
+      "Bash(unzip:*)",
+      "Bash(awk:*)"
     ]
   }
 }

@@ -34,7 +34,9 @@
 
 After activation, you should see:
 - A new menu item under **Tools → Etch WP Menus**
-- Version 2.0.0 in the plugins list
+- Version 3.0.0 in the plugins list
+
+> **ETCH JSON Approach (Recommended):** Use the ETCH JSON tab output to paste a complete block tree with styles directly into ETCH's Structure Panel — no need to copy HTML/CSS/JS separately.
 
 ---
 
@@ -163,25 +165,28 @@ The component expects this data structure:
 {
   "menuItems": [
     {
-      "label": "Home",
+      "title": "Home",
       "url": "/",
-      "active": true,
+      "current": true,
+      "current_parent": false,
+      "state_classes": "",
+      "link_classes": "current-page",
       "children": []
     },
     {
-      "label": "About",
+      "title": "About",
       "url": "/about",
-      "active": false,
+      "current": false,
+      "current_parent": false,
+      "state_classes": "has-submenu",
+      "link_classes": "",
       "children": [
         {
-          "label": "Team",
+          "title": "Team",
           "url": "/about/team",
-          "active": false
-        },
-        {
-          "label": "Story",
-          "url": "/about/story",
-          "active": false
+          "state_classes": "",
+          "link_classes": "",
+          "children": []
         }
       ]
     }
@@ -207,74 +212,46 @@ fetch('/wp-json/wp/v2/menus/global-navigation')
 
 ### Changing Colors
 
-In the CSS, find and modify these color variables:
+All colours are controlled via CSS custom properties. Override them in your stylesheet:
 
 ```css
-/* Desktop menu link color */
-.global-nav__menu-link {
-  color: #2c3338; /* Change this */
-}
-
-/* Desktop menu link hover color */
-.global-nav__menu-link:hover {
-  color: #0073aa; /* Change this */
-}
-
-/* Active menu item color */
-.global-nav__menu-link.is-active {
-  color: #0073aa; /* Change this */
-}
-
-/* Hamburger line color */
-.global-nav__hamburger-line {
-  background-color: #2c3338; /* Change this */
+:root {
+  --menu-clr-text: #2c3338;
+  --menu-clr-text-accent: #0073aa;
+  --menu-clr-bg: #ffffff;
+  --menu-clr-bg-accent: #f0f0f1;
+  --menu-clr-bg-hover: #f9f9f9;
 }
 ```
 
 ### Adjusting Mobile Menu Width
 
-For left/right slide menus:
-
 ```css
-@media (max-width: 1200px) {
-  .global-nav__menu {
-    width: 300px; /* Change this - try 280px, 320px, 400px */
-  }
+:root {
+  --menu-mobile-width: 320px; /* Try 280px, 360px, 400px */
 }
 ```
 
 ### Changing Animation Speed
 
-```css
-/* Hamburger animation */
-.global-nav__hamburger-line {
-  transition: all 0.3s linear; /* Change 0.3s to 0.2s, 0.4s, etc. */
-}
+All transitions are controlled via custom properties:
 
-/* Menu slide animation */
-.global-nav__menu {
-  transition: transform 0.3s ease; /* Change 0.3s and ease */
+```css
+:root {
+  --menu-transition-duration: 0.2s;
+  --menu-transition-easing: ease-in-out;
+  --menu-hover-delay: 0.15s;
 }
 ```
 
-### Adding a Logo
-
-Add this HTML before the hamburger button:
-
-```html
-<a href="/" class="global-nav__logo">
-  <img src="/path/to/logo.png" alt="Your Logo">
-</a>
-```
-
-Add this CSS:
+### Adjusting Spacing
 
 ```css
-.global-nav__logo {
-  img {
-    height: 40px;
-    width: auto;
-  }
+:root {
+  --menu-padding-x: 1.25rem;
+  --menu-padding-y: 0.75rem;
+  --menu-gap: 0.5rem;
+  --menu-padding-top: 80px;
 }
 ```
 
@@ -283,12 +260,10 @@ Add this CSS:
 Add this CSS to make the navigation sticky:
 
 ```css
-.global-nav {
+.global-navigation {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 ```
 
@@ -315,7 +290,7 @@ Add this CSS to make the navigation sticky:
 ### Menu Items Not Appearing (Direct Loop)
 
 **Check:**
-1. WordPress menu is named exactly "Global Navigation"
+1. WordPress menu exists and is selected in the plugin settings
 2. Menu has items added and saved
 3. Menu is assigned to a location (if required by your theme)
 4. Menu items are published, not drafts
@@ -389,6 +364,6 @@ If you encounter issues not covered here:
 
 ---
 
-**Last Updated**: February 6, 2026
-**Plugin Version**: 2.0.0
+**Last Updated**: February 9, 2026
+**Plugin Version**: 3.0.0
 **Author**: Stuart Davison | BBG Digital

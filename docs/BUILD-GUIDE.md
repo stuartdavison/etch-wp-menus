@@ -2,8 +2,8 @@
 
 Comprehensive architecture reference for developers and AI agents working on this plugin.
 
-**Version:** 2.0.0
-**Last Updated:** February 6, 2026
+**Version:** 3.0.0
+**Last Updated:** February 9, 2026
 
 ---
 
@@ -47,10 +47,10 @@ Admin UI (templates/admin-page.php)
 ### Data Flow (Frontend)
 
 ```
-WordPress Menu (wp_terms, wp_termmeta, wp_posts)
+WordPress Menu (wp_terms, wp_term_relationships)
   → wp_get_nav_menu_items($menu_id)
   → _wp_menu_item_classes_by_context($menu_items)   [frontend only]
-  → Build hierarchical tree with state_classes
+  → Build hierarchical tree with state_classes + link_classes
   → Injected via etch/dynamic_data/option filter
   → Available as options.menus.{menu_slug} in ETCH templates
 ```
@@ -81,11 +81,11 @@ Renders an HTML element (div, nav, ul, li, a, button, span).
     'metadata'   => array( 'name' => 'Menu Item' ),  // Structure Panel label
     'tag'        => 'li',                              // HTML tag
     'attributes' => array(                             // HTML attributes
-        'class' => 'global-nav__menu-item {item.state_classes}',
-        'role'  => 'none',
-        'href'  => '{item.url}',                       // ETCH variable interpolation
+        'class'      => 'global-navigation__item {item.state_classes}',
+        'role'       => 'none',
+        'data-level' => '1',
     ),
-    'styles'     => array( 'global-nav-menu-item' ),   // References top-level styles keys
+    'styles'     => array( 'global-navigation-item' ), // References top-level styles keys
 )
 ```
 
@@ -144,6 +144,33 @@ $nav_element['attrs']['script'] = array(
 );
 ```
 
+### Block Tree Structure (v3)
+
+When mobile is enabled, the nav is the root block. The hamburger is a sibling of `__menu` inside nav — it stays visible when `__menu` slides off-screen:
+
+```
+Nav Element (nav.{cls}, data-position="{pos}", data-behavior="{behavior}")
+├── Hamburger Button (button.__hamburger, position: absolute)
+│   ├── Line 1 (span.__hamburger-line)
+│   ├── Line 2 (span.__hamburger-line)
+│   └── Line 3 (span.__hamburger-line)
+└── Menu Panel (div.__menu, position: fixed + transform on mobile)
+    └── Menu List (ul.__list)
+        └── Loop (etch/loop → options.menus.{slug})
+            └── Menu Item (li.__item {item.state_classes})
+                ├── Link (a.__link {item.link_classes})
+                │   └── Text ({item.title})
+                ├── Condition (if item.children)
+                │   └── Toggle Button (button.__submenu-toggle)
+                │       └── Icon (span.__submenu-icon)
+                └── Condition (if item.children)
+                    └── Submenu (ul.__sub-menu)
+                        └── Loop (etch/loop → item.children)
+                            └── ... (recursive)
+```
+
+When mobile is disabled, the nav element is the root block directly (no hamburger, no `__menu` wrapper — `<ul>` is a direct child).
+
 ---
 
 ## ETCH Style Object Format
@@ -151,20 +178,21 @@ $nav_element['attrs']['script'] = array(
 Each style in the `styles` collection is keyed by an identifier and has this shape:
 
 ```php
-'global-nav-menu-link' => array(
-    'type'       => 'class',                           // Always 'class'
-    'selector'   => '.global-nav__menu-link',          // CSS selector
-    'collection' => 'default',                         // Always 'default'
-    'css'        => "text-decoration: none;\ncolor: #2c3338;\nfont-weight: 500;",
+'global-navigation-link' => array(
+    'type'       => 'class',                                // Always 'class'
+    'selector'   => '.global-navigation__link',             // CSS selector
+    'collection' => 'default',                              // Always 'default'
+    'css'        => "text-decoration: none;\ncolor: var(--menu-clr-text);\nfont-weight: 500;",
     'readonly'   => false,
 )
 ```
 
 ### Rules
 
-- **Selector:** Flat CSS selector (no SCSS nesting). Use full BEM selectors.
+- **Selector:** Flat CSS selector (no nesting). Use full BEM selectors.
 - **CSS:** Individual property declarations separated by `\n`. No braces.
-- **Pseudo-elements/states:** Use separate style objects (e.g., `.menu-link:hover` is its own entry).
+- **CSS Custom Properties:** All values reference `var(--menu-*)` tokens where appropriate.
+- **Pseudo-elements/states:** Use separate style objects (e.g., `.link:hover` is its own entry).
 - **Media queries:** Write as raw CSS string in the `css` field: `@media (max-width: 1200px) { ... }` — the entire block including braces.
 - **Style keys:** Referenced from element blocks via `attrs.styles` array.
 
@@ -195,6 +223,7 @@ Used in HTML tab output and block tree `content`/`attributes` fields.
 {item.title}
 {item.url}
 {item.state_classes}
+{item.link_classes}
 ```
 
 Works in both HTML tab templates AND block tree `attributes` values.
@@ -215,17 +244,22 @@ In the ETCH block tree, nested `etch/loop` blocks **always use `item`** — ETCH
 
 ### 1. `{#if}` Does Not Work in Block Tree Attributes
 
-**Problem:** Placing `{#if item.current}is-current{/if}` inside a block's `attributes.class` causes ALL items to get ALL classes.
+**Problem:** Placing `{#if item.current}current-page{/if}` inside a block's `attributes.class` causes ALL items to get ALL classes.
 
-**Solution:** Pre-compute a `state_classes` string in the PHP data layer:
+**Solution:** Pre-compute separate class strings in the PHP data layer:
 ```php
+// state_classes — for <li> elements
 $state = array();
-if ( $menu_item['current'] )        $state[] = 'is-current';
-if ( $menu_item['current_parent'] ) $state[] = 'is-current-parent';
+if ( $menu_item['current_parent'] ) $state[] = 'current-parent';
 if ( ! empty( $menu_item['children'] ) ) $state[] = 'has-submenu';
 $menu_item['state_classes'] = implode( ' ', $state );
+
+// link_classes — for <a> elements
+$link = array();
+if ( $menu_item['current'] ) $link[] = 'current-page';
+$menu_item['link_classes'] = implode( ' ', $link );
 ```
-Then use `{item.state_classes}` in the block attribute — simple interpolation works.
+Then use `{item.state_classes}` on `<li>` and `{item.link_classes}` on `<a>` — simple interpolation works.
 
 ### 2. `conditionString` Must Be Top-Level
 
@@ -253,13 +287,31 @@ Then use `{item.state_classes}` in the block attribute — simple interpolation 
 
 ### 6. Submenu Behaviour Scope
 
-**Problem:** Applying `submenu_behavior` settings (always/accordion/clickable) to desktop CSS broke hover-reveal.
+Desktop CSS ALWAYS uses hover-reveal with configurable delay. The `submenu_behavior` setting (accordion/slide) ONLY affects the mobile `@media` block. This is enforced in both the CSS tab output and the ETCH flat styles.
 
-**Solution:** Desktop CSS ALWAYS uses hover-reveal. The `submenu_behavior` setting ONLY affects the mobile `@media` block.
+### 7. Hamburger Inside `<nav>`, Sibling of `__menu`
 
-### 7. Duplicate Hamburger Button
+The hamburger is inside `<nav>` as its first child, but it is a **sibling** of the `__menu` wrapper div (not inside it). On mobile, `__menu` gets `position: fixed` + `transform` to slide off-screen. Because the hamburger is outside `__menu`, it stays visible. The JS finds the hamburger via `document.querySelector('[aria-controls="' + navElement.id + '"]')` (matching the `aria-controls` attribute to the nav's `id`).
 
-ETCH may render its own `etch-burger` element alongside our `__hamburger` button. These are independent — our button is inside the generated `<nav>`, ETCH's is external. Set our hamburger z-index higher (1000) than the menu (999).
+### 8. `__menu` Wrapper Pattern
+
+The `__menu` div wraps the `<ul>` and is the element that slides on/off screen on mobile. The `is-open` class is applied to `__menu` (not `<nav>`). This pattern ensures the hamburger stays accessible at all times. JS stores this as `this.menu` and appends sliding panels to it.
+
+### 9. No Modifier Classes — Use Data Attributes
+
+ETCH strips extra classes from elements (it controls the `class` attribute via its styles system). Instead of `.global-navigation--left` and `.global-navigation--slide`, position and behaviour are stored as `data-position` and `data-behavior` attributes on `<nav>`. JS reads these via `this.nav.dataset.behavior`.
+
+### 10. ETCH Selector Deduplication
+
+ETCH only renders the **last** style with a given selector value. If multiple styles share selector `.global-navigation`, only the last one appears in the rendered CSS. All CSS for `.global-navigation` must be combined into a single style entry (`nav-all`). Each ETCH style must have a unique selector.
+
+### 11. Desktop Sub-menu Styles Must Be Media-Query Wrapped
+
+Desktop dropdown positioning (`position: absolute; opacity: 0; visibility: hidden`) and hover reveal (`opacity: 1; visibility: visible`) must be inside `@media (min-width)` blocks. Without this, they leak into mobile and cause submenus to appear as floating dropdowns on hover inside sliding panels.
+
+### 12. Slide Mode Panel Structure
+
+The ETCH block tree and HTML output use the same nested structure for both accordion and slide modes. Slide mode's flat panel structure is built **dynamically by JavaScript** from the nested HTML at the mobile breakpoint. JS reads `this.nav.dataset.behavior === 'slide'` to activate `setupSlideMode()`.
 
 ---
 
@@ -267,12 +319,12 @@ ETCH may render its own `etch-burger` element alongside our `__hamburger` button
 
 Every CSS change must be made in **two places**:
 
-### 1. SCSS-Nested (CSS Tab)
-Generated by `generate_css()`. Uses SCSS `&` nesting under `.{$cls}`:
-```scss
-.global-nav {
-  &__menu-item { position: relative; }
-  &__submenu { position: absolute; ... }
+### 1. CSS-Nested (CSS Tab)
+Generated by `generate_css()`. Uses native CSS nesting under `.{$cls}`:
+```css
+.global-navigation {
+  & .global-navigation__item { position: relative; }
+  & .global-navigation__sub-menu { position: absolute; ... }
 }
 ```
 Users copy this to their CSS panel or stylesheet.
@@ -280,8 +332,8 @@ Users copy this to their CSS panel or stylesheet.
 ### 2. Flat Individual Styles (ETCH JSON)
 Generated by `build_etch_styles()`. Each rule is a separate style object with flat selectors:
 ```php
-'global-nav-submenu' => array(
-    'selector' => '.global-nav__submenu',
+'global-navigation-sub-menu' => array(
+    'selector' => '.global-navigation__sub-menu',
     'css'      => 'position: absolute; ...',
 )
 ```
@@ -289,10 +341,35 @@ These are embedded in the ETCH JSON and render automatically in the builder.
 
 ### Mobile CSS Split
 
-- **SCSS:** `get_menu_position()` returns a complete `@media` block with SCSS nesting
-- **Flat:** `get_flat_mobile_css()` returns a single style object whose `css` field is a raw `@media` block with flat selectors
+- **CSS Tab:** Mobile styles are part of the main `generate_css()` output, wrapped in `@media (max-width: {breakpoint}px)`. The `__menu` wrapper gets `position: fixed` in a separate rule.
+- **Flat (ETCH JSON):** `get_flat_mobile_css()` returns three style objects:
+  - `nav-all` (selector `.{cls}`) — base nav + all child-element responsive CSS (the ONLY style with this selector)
+  - `menu-all` (selector `.{cls}__menu`) — `position: fixed` + `transform` on mobile
+  - `menu-mobile-open` (selector `.{cls}__menu.is-open`) — `transform` to reveal panel
 
-Both methods accept the same parameters: `$position`, `$breakpoint`, `$settings`/`$mobile_depth`, `$submenu_behavior`.
+### CSS Custom Properties
+
+Both CSS outputs reference `:root` custom properties:
+```css
+:root {
+  --menu-clr-text: #2c3338;
+  --menu-clr-text-accent: #0073aa;
+  --menu-clr-bg: #ffffff;
+  --menu-clr-bg-accent: #f0f0f1;
+  --menu-clr-bg-hover: #f9f9f9;
+  --menu-mobile-width: 320px;
+  --menu-padding-x: 1.25rem;
+  --menu-padding-y: 0.75rem;
+  --menu-gap: 0.5rem;
+  --menu-padding-top: 80px;
+  --menu-toggle-size: 44px;
+  --menu-transition-duration: 0.2s;
+  --menu-transition-easing: ease-in-out;
+  --menu-hover-delay: 0.15s;
+  --menu-mobile-breakpoint: {breakpoint}px;
+}
+```
+Users customise appearance by overriding these tokens — no need to edit generated CSS.
 
 ---
 
@@ -320,10 +397,10 @@ Examples: "Primary Menu" → `primary_menu`, "Footer-Navigation" → `footer_nav
 ### Current Page Detection
 
 On the frontend, `_wp_menu_item_classes_by_context()` inspects `$wp_query` to mark:
-- `current-menu-item` → `is-current`
-- `current-menu-parent` + `current-menu-ancestor` → `is-current-parent`
+- `current-menu-item` → `current` boolean → `link_classes: "current-page"` (on `<a>`)
+- `current-menu-parent` + `current-menu-ancestor` → `current_parent` boolean → `state_classes: "current-parent"` (on `<li>`)
 
-These are stored as boolean fields AND pre-computed into `state_classes`.
+These are stored as boolean fields AND pre-computed into `state_classes` and `link_classes`.
 
 ---
 
@@ -333,15 +410,15 @@ These are stored as boolean fields AND pre-computed into `state_classes`.
 |---------|--------|---------|
 | `approach` | `direct`, `component` | Loop target, HTML template |
 | `menu_id` | WordPress menu ID | Menu name slug in loop target |
-| `container_class` | String (default: `global-nav`) | All CSS selectors, HTML classes |
+| `container_class` | String (default: `global-navigation`) | All CSS selectors, HTML classes |
 | `component_prop_name` | String (default: `menuItems`) | Component loop target |
 | `mobile_menu_support` | Boolean | Hamburger, mobile CSS, JS output |
-| `mobile_breakpoint` | 320-1920 (default: 1200) | @media max-width value |
-| `hamburger_animation` | `spin`, `squeeze`, `collapse`, `arrow` | Hamburger CSS transforms |
-| `menu_position` | `left`, `right`, `top`, `full` | Mobile menu CSS positioning |
-| `submenu_behavior` | `always`, `accordion`, `clickable` | Mobile submenu CSS + JS |
-| `submenu_depth_desktop` | 0-5 (default: 1) | Submenu block tree depth |
-| `submenu_depth_mobile` | 0-5 (default: 1) | Mobile submenu CSS |
+| `mobile_breakpoint` | 320–1920 (default: 1200) | @media max-width value, CSS custom property |
+| `hamburger_animation` | `spin`, `squeeze`, `collapse` | Hamburger CSS transforms |
+| `menu_position` | `left`, `right`, `top` | Mobile menu CSS positioning, modifier class on `<nav>` |
+| `submenu_behavior` | `accordion`, `slide` | Mobile submenu CSS + JS, modifier class on `<nav>` |
+| `submenu_depth_desktop` | 0–5 (default: 1) | Submenu block tree depth |
+| `submenu_depth_mobile` | 0–5 (default: 1) | Mobile submenu CSS indentation |
 | `close_methods` | Array: `hamburger`, `outside`, `esc` | JS event listeners |
 | `accessibility` | Array: `focus_trap`, `scroll_lock`, `aria`, `keyboard` | JS features |
 
@@ -355,14 +432,15 @@ These are stored as boolean fields AND pre-computed into `state_classes`.
 - Enqueues admin CSS/JS (only on plugin page)
 - AJAX handlers: `ajax_generate_code()`, `ajax_get_menu_json()`
 - `add_menus_to_etch()` — the `etch/dynamic_data/option` filter callback
+- Builds `state_classes` (`has-submenu`, `current-parent`) and `link_classes` (`current-page`)
 
 ### `includes/class-navigation-generator.php` (Code Generator)
 The core engine. Key methods:
 
 **Public API:**
 - `generate_html($settings)` — dispatches to direct or component HTML
-- `generate_css($settings)` — SCSS-nested CSS with responsive breakpoints
-- `generate_javascript($settings)` — Vanilla JS IIFE
+- `generate_css($settings)` — CSS with custom properties + native nesting
+- `generate_javascript($settings)` — ES6 `class AccessibleNavigation`
 - `generate_etch_json($settings)` — Complete ETCH block tree + styles + script
 - `get_menu_json($menu_id)` — Menu data preview
 
@@ -373,16 +451,19 @@ The core engine. Key methods:
 - `generate_submenu_html_component()` — Recursive submenu HTML (component approach)
 
 **CSS Generation:**
-- `generate_css()` — Main SCSS output, calls `get_menu_position()` for mobile
-- `get_menu_position($position, $breakpoint, $settings)` — SCSS @media block per position
-- `get_hamburger_animation($type)` — SCSS hamburger transforms
+- `generate_css()` — Main CSS output with `:root` tokens, native nesting, responsive breakpoints
+- `get_menu_position($position, $breakpoint)` — Position-specific mobile CSS
+- `get_hamburger_animation($type)` — Hamburger transforms (spin, squeeze, collapse)
+
+**JavaScript Generation:**
+- `generate_javascript()` — ES6 class with slide mode, desktop hover, edge detection, keyboard nav
 
 **ETCH JSON Generation:**
 - `generate_etch_json()` — Assembles complete block tree, styles, script
-- `build_etch_styles($settings)` — All flat style objects (desktop + mobile)
+- `build_etch_styles($settings)` — All flat style objects (desktop + mobile + hamburger)
 - `build_submenu_blocks($depth, $max_depth, $approach)` — Recursive submenu block tree
-- `build_hamburger_block()` — Hamburger button block with 3 spans
-- `get_flat_mobile_css($position, $breakpoint, $mobile_depth, $submenu_behavior)` — @media block
+- `build_hamburger_block()` — Hamburger button block with 3 spans + aria-controls
+- `get_flat_mobile_css($position, $breakpoint, $submenu_behavior)` — Returns 3 styles: `nav-all` (combined .{cls} CSS), `menu-all` (.__menu positioning), `menu-mobile-open` (.__menu.is-open)
 - `get_flat_hamburger_animation($type)` — Flat animation style objects
 
 **Block Tree Helpers:**
@@ -394,7 +475,7 @@ The core engine. Key methods:
 - `make_inner_content($child_count)` — Gutenberg innerContent convention
 
 **Utilities:**
-- `get_css_class($settings)` / `sanitize_css_class($name)` — Container class
+- `get_css_class($settings)` / `sanitize_css_class($name)` — Container class (default: `global-navigation`)
 - `sanitize_for_etch($name)` — Menu slug (underscores only)
 - `sanitize_prop_name($name)` — Component prop name (preserves camelCase)
 - `get_menu_name($settings)` — Resolved menu slug from settings
@@ -409,7 +490,7 @@ The core engine. Key methods:
 - WordPress-native admin UI with radio buttons, toggles, sliders
 - Approach selector (direct/component)
 - Menu dropdown, container class field, component prop name
-- Mobile settings: breakpoint, hamburger animation, position, submenu behaviour
+- Mobile settings: breakpoint, hamburger animation (spin/squeeze/collapse), position (left/right/top), submenu behaviour (accordion/slide)
 - Accessibility checkboxes, close method checkboxes
 - Output area with 4 tabs: ETCH JSON (recommended), HTML, CSS, JS
 - Sidebar: field names reference, data structure info
@@ -419,8 +500,10 @@ The core engine. Key methods:
 - Settings collection from form fields
 - AJAX request to generate code
 - Tab switching, copy-to-clipboard
-- Hamburger animation preview
+- Hamburger animation preview (spin, squeeze, collapse)
 - Menu JSON preview loader
+- Mobile settings show/hide toggle
+- Container class auto-population from menu name
 
 ### `assets/css/admin-builder.css`
 - WordPress-native admin styling
@@ -434,107 +517,119 @@ The core engine. Key methods:
 
 ### BEM Methodology
 
-All selectors use BEM with a dynamic prefix (`$cls`, default `global-nav`):
+All selectors use BEM with a dynamic prefix (`$cls`, default `global-navigation`):
 
 ```
-Block:    .global-nav
-Elements: .global-nav__container, __hamburger, __menu, __menu-list, etc.
-Modifiers: .is-current, .is-current-parent, .is-open, .is-active, .has-submenu
+Block:    .global-navigation
+Elements: .__hamburger, .__menu, .__list, .__item, .__link, .__sub-menu,
+          .__submenu-toggle, .__submenu-icon, .__back, .__back-button, .__back-icon
+Attributes: data-position="left|right|top", data-behavior="accordion|slide" (on <nav>)
+Utilities: .has-submenu, .current-parent (on <li>), .current-page (on <a>)
+JS State:  .is-open (on .__menu), .is-active (on hamburger),
+           .__item--submenu-open (on <li>), .cascade-left, .menu-open (on body)
 ```
 
-### Desktop Styles (Always Applied)
-- Horizontal flex layout
-- Submenu hidden with `opacity: 0; visibility: hidden`
-- Submenu revealed on `:hover` with transition
-- Nested submenus fly out to the right
+### Desktop Styles (Inside @media min-width)
+- Horizontal flex layout for `__list`
+- `__sub-menu` hidden with `opacity: 0; visibility: hidden` — **inside desktop `@media` only** to prevent mobile leak
+- Submenu revealed on parent `:hover` and `:focus-within` with `transition-delay` — **desktop `@media` only**
+- Nested submenus cascade to the right (`left: 100%`) — **desktop `@media` only**
+- `.cascade-left` class (JS-managed) cascades to the left for edge detection
 - Hamburger hidden (`display: none`)
 - Submenu toggle hidden (`display: none`)
 
-### Mobile Styles (Inside @media)
-- Hamburger shown (`display: flex`)
-- Submenu toggle shown (`display: flex`) — for accordion mode
-- Menu is fixed-position panel (left/right/top/full)
-- Menu starts off-screen, slides in with `.is-open`
-- Box shadow only on `.is-open` state
+### Mobile Styles (Inside @media max-width)
+- Hamburger shown (`display: flex`, position: absolute)
+- `__menu` wrapper gets `position: fixed` + `transform` to slide off-screen (not the nav — nav stays in flow)
+- `__menu.is-open` slides the panel into view
 - Menu list stacks vertically
-- Submenu behaviour varies by setting:
-  - **Always:** Expanded, visible
-  - **Accordion:** Collapsed (`max-height: 0`), expand on `.is-open`
-  - **Clickable:** Hidden (`display: none`)
+- Submenu behaviour varies by `data-behavior` attribute:
+  - **`accordion`:** Submenu hidden with `max-height: 0; overflow: hidden`. Toggle shown. `__item--submenu-open` reveals submenu. Chevron rotates.
+  - **`slide`:** JS builds flat panels dynamically from nested HTML. Original `__list` hidden via `__menu > __list { display: none }`. Panels slide horizontally with back buttons.
 
-### Chevron Toggle (Accordion Mode, Mobile Only)
+### Chevron Toggle (Mobile Only)
 ```css
-.__submenu-toggle {
-  /* Positioned absolute right inside .has-submenu li */
-  /* Contains ::after pseudo-element with CSS border chevron */
-  /* Rotates from 45deg (down) to -135deg (up) when .is-open */
+.__submenu-icon {
+  /* CSS border chevron pointing down */
+  /* Rotates 180deg when parent has __item--submenu-open class */
 }
 ```
 
-### Submenu Dash Inset (Mobile Only)
-```css
-.__submenu-link::before {
-  content: '—';
-  position: absolute;
-  left: 0;
-  /* Visually indents submenu items */
-}
-```
+### Submenu Indentation (Mobile Only)
+Submenu items use `padding-left` for visual indentation:
+- Level 2: `padding-left: 40px`
+- Level 3: `padding-left: 70px`
+
+### CSS Custom Properties
+All values use `:root` tokens. Users override tokens to customise without editing generated CSS:
+- `--menu-clr-*` — Colour tokens
+- `--menu-padding-*` — Spacing tokens
+- `--menu-transition-*` — Animation tokens
+- `--menu-mobile-width` — Mobile panel width
+- `--menu-toggle-size` — Toggle button size
+- `--menu-mobile-breakpoint` — Stored for JS to read via `getComputedStyle()`
 
 ---
 
 ## JavaScript Architecture
 
-### Pattern: IIFE with Object Literal
+### Pattern: ES6 Class
 
 ```javascript
-(function() {
-  'use strict';
-  const globalNav = {
-    isOpen: false,
-    scrollPosition: 0,
-    init: function() { ... },
-    toggleMenu: function() { ... },
-    // ... modular methods
-  };
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { globalNav.init(); });
-  } else {
-    globalNav.init();
+class AccessibleNavigation {
+  constructor(navElement) {
+    this.nav = navElement;
+    this.menu = navElement.querySelector('.global-navigation__menu');
+    this.hamburger = document.querySelector('[aria-controls="' + navElement.id + '"]');
+    this.isMobile = false;
+    this.isOpen = false;
+    this.init();
   }
-})();
-```
 
-### Modular Features (Conditionally Included)
+  init() {
+    this.checkMobile();
+    window.addEventListener('resize', () => this.checkMobile());
+    this.hamburger.addEventListener('click', () => this.toggleMenu());
+    this.setupDesktopHover();
+    this.checkSubMenuEdges();
+    this.setupKeyboardNavigation();
+    // Conditional: accordion toggle, slide mode, close methods
+  }
+  // ...
+}
 
-Each feature is added to the JS output only if its corresponding setting is enabled:
-
-- **`toggleMenu()`** — Always included. Toggles `.is-active` on hamburger, `.is-open` on menu.
-- **`lockScroll()` / `unlockScroll()`** — If `scroll_lock` accessibility enabled
-- **`trapFocus()` / `releaseFocus()` / `handleFocusTrap()`** — If `focus_trap` enabled
-- **`handleClickOutside()`** — If `outside` close method enabled
-- **`handleEscKey()`** — If `esc` close method enabled
-- **`setupSubmenuAccordion()`** — If `submenu_behavior === 'accordion'`
-
-### Accordion Toggle
-
-The accordion JS targets `.__submenu-toggle` buttons (not links):
-```javascript
-const submenuToggles = this.menu.querySelectorAll('.global-nav__submenu-toggle');
-submenuToggles.forEach(toggle => {
-    toggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const parent = toggle.parentElement;
-        const submenu = parent.querySelector('.global-nav__submenu');
-        parent.classList.toggle('is-open');
-        submenu.style.maxHeight = parent.classList.contains('is-open')
-            ? submenu.scrollHeight + 'px' : '0';
-    });
+document.addEventListener('DOMContentLoaded', function() {
+  const nav = document.querySelector('.global-navigation');
+  if (nav) new AccessibleNavigation(nav);
 });
 ```
 
-Parent `<a>` links remain fully navigable — they are not hijacked.
+### Core Methods
+
+- **`checkMobile()`** — Reads `--menu-mobile-breakpoint` from CSS via `getComputedStyle()`, sets `this.isMobile`
+- **`toggleMenu()` / `openMenu()` / `closeMenu()`** — Toggle `is-open` on `__menu` (not nav), `is-active` on hamburger, `menu-open` on body. Focus management.
+- **`setupDesktopHover()`** — `mouseenter`/`mouseleave` on `.has-submenu` items with 200ms delay timeout. Closes sibling submenus. Adds `__item--submenu-open` class.
+- **`checkSubMenuEdges()`** — On `mouseenter`, checks if `__sub-menu` overflows viewport right edge. Adds `.cascade-left` if so.
+- **`setupKeyboardNavigation()`** — Full WCAG arrow key support. Context-aware (top-level horizontal vs submenu vertical, mobile vs desktop).
+- **`handleAccordionToggle(e)`** — Toggles `__item--submenu-open` on parent item, updates `aria-expanded`, manages `max-height`.
+
+### Conditional Features (Included Based on Settings)
+
+- **`setupSlideMode()`** — Only if `submenu_behavior === 'slide'`. Builds flat panel structure from nested HTML. Creates `sliding-nav-panels` container, `sliding-panel` divs, back buttons.
+- **`setupSlidePanelListeners()`** — Click handlers for forward/back panel navigation.
+- **Scroll lock** — `lockScroll()` / `unlockScroll()` — saves scroll position, applies `menu-open` to body.
+- **Focus trap** — `trapFocus()` / `releaseFocus()` — traps Tab key within open mobile menu.
+- **Click outside** — Closes menu when clicking outside nav element.
+- **ESC key** — Closes menu on Escape key press.
+
+### Key Element Discovery
+
+```javascript
+// Hamburger — inside <nav> but linked via aria-controls
+this.hamburger = document.querySelector('[aria-controls="' + navElement.id + '"]');
+// Menu panel — the wrapper div that slides on mobile
+this.menu = navElement.querySelector('.global-navigation__menu');
+```
 
 ---
 
@@ -544,15 +639,15 @@ Parent `<a>` links remain fully navigable — they are not hijacked.
 
 2. **ETCH loop variable is always `item`** — Cannot use custom iterator names in block tree. HTML tab output uses `child`/`subchild` for readability but the block tree always uses `item`.
 
-3. **`{#if}` does not work in block attributes** — Only simple `{variable}` interpolation works. State detection must be pre-computed as `state_classes`.
+3. **`{#if}` does not work in block attributes** — Only simple `{variable}` interpolation works. State detection must be pre-computed as `state_classes` and `link_classes`.
 
 4. **No hooks/filters on generated output** — The plugin doesn't provide WordPress hooks for customizing generated code. Users modify the output after generation.
 
 5. **ETCH-specific format** — The ETCH JSON output is specific to the ETCH theme builder. It cannot be used with other builders.
 
-6. **Mobile breakpoint is hardcoded to 60px hamburger height** — The `top: 60px` offset assumes the container + hamburger is approximately 60px tall. If users change container padding significantly, they may need to adjust.
+6. **Slide mode built dynamically** — The slide panel structure is created by JavaScript at runtime from nested HTML. The ETCH block tree does not contain slide-specific blocks.
 
-7. **Max accordion height** — Accordion submenus use `max-height: 500px` as a fallback in CSS, with JS setting the actual `scrollHeight`. Very tall submenus may have a brief transition quirk.
+7. **CSS custom properties browser support** — All styling uses CSS custom properties (`var(--menu-*)`). Requires browsers that support custom properties (all modern browsers).
 
 ---
 

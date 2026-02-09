@@ -468,17 +468,6 @@
             transform: translateY(-8px) rotate(45deg);
           }
         `,
-        arrow: `
-          .etch-preview-hamburger.is-active .etch-preview-line:nth-child(1) {
-            transform: translateX(-4px) rotate(-45deg) scaleX(0.55);
-          }
-          .etch-preview-hamburger.is-active .etch-preview-line:nth-child(2) {
-            transform: translateX(0);
-          }
-          .etch-preview-hamburger.is-active .etch-preview-line:nth-child(3) {
-            transform: translateX(-4px) rotate(45deg) scaleX(0.55);
-          }
-        `
       };
 
       const css = animations[type] || animations.spin;

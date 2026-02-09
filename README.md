@@ -1,6 +1,6 @@
 # Etch WP Menus
 
-Generate customizable navigation code for the ETCH theme builder with mobile breakpoints, accordion submenus, and comprehensive accessibility.
+Generate customizable, accessible navigation code for the ETCH theme builder with CSS custom properties, slide/accordion mobile modes, and full keyboard navigation.
 
 ## Description
 
@@ -8,7 +8,7 @@ Etch WP Menus is a WordPress plugin that provides an intuitive admin interface f
 
 ## Version
 
-**Current:** 2.0.0
+**Current:** 3.0.0
 
 ## Features
 
@@ -16,33 +16,40 @@ Etch WP Menus is a WordPress plugin that provides an intuitive admin interface f
   - **Direct Loop**: Binds to WordPress menus via `{#loop options.menus.{slug} as item}`
   - **Component**: Reusable components via `{#loop props.menuItems as item}`
 
-- **ETCH JSON Block Tree**: Generates complete `etch/element`, `etch/loop`, `etch/condition`, and `etch/text` blocks — fully editable in the ETCH Structure Panel
+- **ETCH JSON Block Tree**: Generates `etch/element`, `etch/loop`, `etch/condition`, and `etch/text` blocks — fully editable in ETCH's Structure Panel
 
-- **Pre-computed State Classes**: `item.state_classes` provides BEM modifier classes (`is-current`, `is-current-parent`, `has-submenu`) for each menu item
+- **Pre-computed State Fields**:
+  - `item.state_classes` — utility classes for `<li>` elements (`has-submenu`, `current-parent`)
+  - `item.link_classes` — utility classes for `<a>` elements (`current-page`)
 
-- **Dynamic Container Class**: Customizable CSS class prefix (default: `global-nav`)
+- **CSS Custom Properties**: All styling controlled via `:root` tokens (`--menu-clr-text`, `--menu-padding-x`, etc.) — easy to customise without editing generated CSS
+
+- **Dynamic Container Class**: Customizable CSS class prefix (default: `global-navigation`)
 
 - **Customizable Mobile Breakpoints**: 320px - 1920px range (default: 1200px)
 
-- **Four Hamburger Animations**: Spin, Squeeze, Collapse, Arrow
+- **Three Hamburger Animations**: Spin, Squeeze, Collapse
 
-- **Four Menu Positions**: Left slide, Right slide, Top dropdown, Full overlay
+- **Three Menu Positions**: Left, Right, Top
 
-- **Three Submenu Behaviors** (mobile only — desktop always uses hover):
-  - **Always Show**: Submenus expanded by default
-  - **Accordion**: Click chevron toggle to expand/collapse (with animated chevron)
-  - **Clickable**: Parent links navigate, submenus hidden on mobile
+- **Two Submenu Behaviors** (mobile only — desktop always uses hover with delay):
+  - **Accordion**: Click chevron toggle to expand/collapse with animated chevron rotation
+  - **Slide**: Horizontal panel navigation with back buttons (Netflix-style)
 
-- **Mobile UI**:
-  - No default background colours (user-controlled via ETCH)
-  - Box shadow only appears when menu is open (no bleed when off-screen)
-  - Menu aligned below hamburger with top offset
-  - Submenu links inset with dash prefix
-  - Chevron toggle button for accordion mode
+- **Desktop Features**:
+  - Hover-activated dropdowns with configurable delay (desktop media query only)
+  - Smart edge detection (auto-cascades left when near viewport edge)
+  - `focus-within` support for keyboard submenu reveal
 
-- **Accessibility**: Focus trap, scroll lock, ARIA labels, keyboard navigation, ESC to close
+- **Accessibility (WCAG 2.1 Level AA)**:
+  - Full keyboard navigation (Arrow keys, Enter, Escape)
+  - Proper ARIA attributes (`aria-haspopup`, `aria-expanded`, `aria-current`)
+  - Focus management (menu open/close, submenu transitions)
+  - Screen reader optimised with `role="menubar"`, `role="menu"`, `role="menuitem"`
 
-- **Dual CSS Output**: SCSS-nested (CSS tab) and flat individual styles (ETCH JSON)
+- **ES6 JavaScript**: Modern `class AccessibleNavigation` pattern supporting multiple instances
+
+- **Dual CSS Output**: CSS-nested (CSS tab) and flat individual styles (ETCH JSON)
 
 ## Installation
 
@@ -71,7 +78,7 @@ Etch WP Menus is a WordPress plugin that provides an intuitive admin interface f
 The plugin hooks into `etch/dynamic_data/option` to inject hierarchical menu data:
 
 ```
-options.menus.{menu_slug} → array of menu items with children, state_classes, etc.
+options.menus.{menu_slug} → array of menu items with state_classes, link_classes, children, etc.
 ```
 
 WordPress's `_wp_menu_item_classes_by_context()` is called on the frontend to detect current page, parent, and ancestor states.
@@ -81,9 +88,28 @@ WordPress's `_wp_menu_item_classes_by_context()` is called on the frontend to de
 The admin UI generates four outputs:
 
 1. **HTML** — ETCH template syntax with loops and conditionals
-2. **CSS** — SCSS-nested BEM styles with responsive breakpoints
-3. **JavaScript** — Vanilla JS IIFE with hamburger, accordion, scroll lock, focus trap
+2. **CSS** — CSS custom properties + native nesting with responsive breakpoints
+3. **JavaScript** — ES6 class with slide mode, desktop hover, edge detection, keyboard nav
 4. **ETCH JSON** — Complete block tree with embedded styles and base64-encoded script
+
+### ETCH JSON Architecture
+
+The ETCH JSON block tree structure:
+
+```
+nav (root block)
+  ├── hamburger button (sibling of __menu, stays visible on mobile)
+  └── __menu div (slides off-screen on mobile via position:fixed + transform)
+      └── ul.__list
+          └── loop → menu items
+```
+
+Key architectural decisions:
+- **Hamburger inside `<nav>` but outside `__menu`** — stays visible when `__menu` slides off-screen
+- **`__menu` wrapper** gets `position: fixed` + `transform` on mobile (not the nav)
+- **`is-open` class** applied to `__menu` (not `<nav>`)
+- **`data-position` and `data-behavior` attributes** on `<nav>` (not modifier classes — ETCH strips extra classes)
+- **One style per selector** — ETCH deduplicates styles sharing the same selector
 
 ## Support
 

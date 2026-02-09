@@ -20,7 +20,7 @@ class Etch_Navigation_Generator {
      *
      * @var string
      */
-    private $cls = 'global-nav';
+    private $cls = 'global-navigation';
 
     /**
      * Get WordPress menu name from settings
@@ -85,7 +85,7 @@ class Etch_Navigation_Generator {
             }
         }
 
-        return 'global-nav';
+        return 'global-navigation';
     }
 
     /**
@@ -146,27 +146,25 @@ class Etch_Navigation_Generator {
 
         $cls = $this->cls;
         $next_var = $this->get_depth_var_name( $depth );
+        $data_level = $depth + 1;
 
         $html = "\n{$indent}{#if {$var_name}.children}\n";
-        $html .= "{$indent}  <ul class=\"{$cls}__submenu {$cls}__submenu--level-{$depth}\">\n";
+        $html .= "{$indent}  <ul class=\"{$cls}__sub-menu\" role=\"menu\">\n";
         $html .= "{$indent}    {#loop {$var_name}.children as {$next_var}}\n";
+        $html .= "{$indent}      <li class=\"{$cls}__item {{$next_var}.state_classes}\" role=\"none\" data-level=\"{$data_level}\">\n";
 
-        $sub_li_classes = "{$cls}__submenu-item {#if {$next_var}.current}is-current{/if} {#if {$next_var}.current_parent}is-current-parent{/if}";
-        if ( $depth < $max_depth ) {
-            $sub_li_classes .= " {#if {$next_var}.children}has-submenu{/if}";
-        }
-        $html .= "{$indent}      <li class=\"{$sub_li_classes}\" role=\"none\">\n";
-
-        $html .= "{$indent}        <a href=\"{{$next_var}.url}\" \n";
-        $html .= "{$indent}           class=\"{$cls}__submenu-link {#if {$next_var}.current}is-active{/if}\" \n";
+        $html .= "{$indent}        <a href=\"{{$next_var}.url}\"\n";
+        $html .= "{$indent}           class=\"{$cls}__link {{$next_var}.link_classes}\"\n";
         $html .= "{$indent}           role=\"menuitem\">\n";
         $html .= "{$indent}          {{$next_var}.title}\n";
         $html .= "{$indent}        </a>";
 
-        // A3: Toggle button for submenu items with children
+        // Toggle button for submenu items with children
         if ( $depth < $max_depth ) {
             $html .= "\n{$indent}        {#if {$next_var}.children}\n";
-            $html .= "{$indent}        <button class=\"{$cls}__submenu-toggle\" aria-label=\"Toggle submenu\"></button>\n";
+            $html .= "{$indent}        <button class=\"{$cls}__submenu-toggle\" aria-label=\"Toggle submenu\" tabindex=\"-1\">\n";
+            $html .= "{$indent}          <span class=\"{$cls}__submenu-icon\" aria-hidden=\"true\"></span>\n";
+            $html .= "{$indent}        </button>\n";
             $html .= "{$indent}        {/if}";
         }
 
@@ -198,27 +196,25 @@ class Etch_Navigation_Generator {
 
         $cls = $this->cls;
         $next_var = $this->get_depth_var_name( $depth );
+        $data_level = $depth + 1;
 
         $html = "\n{$indent}{#if {$var_name}.children}\n";
-        $html .= "{$indent}  <ul class=\"{$cls}__submenu {$cls}__submenu--level-{$depth}\">\n";
+        $html .= "{$indent}  <ul class=\"{$cls}__sub-menu\" role=\"menu\">\n";
         $html .= "{$indent}    {#loop {$var_name}.children as {$next_var}}\n";
+        $html .= "{$indent}      <li class=\"{$cls}__item {{$next_var}.state_classes}\" role=\"none\" data-level=\"{$data_level}\">\n";
 
-        $sub_li_classes = "{$cls}__submenu-item {#if {$next_var}.current}is-current{/if} {#if {$next_var}.current_parent}is-current-parent{/if}";
-        if ( $depth < $max_depth ) {
-            $sub_li_classes .= " {#if {$next_var}.children}has-submenu{/if}";
-        }
-        $html .= "{$indent}      <li class=\"{$sub_li_classes}\" role=\"none\">\n";
-
-        $html .= "{$indent}        <a href=\"{{$next_var}.url}\" \n";
-        $html .= "{$indent}           class=\"{$cls}__submenu-link {#if {$next_var}.current}is-active{/if}\" \n";
+        $html .= "{$indent}        <a href=\"{{$next_var}.url}\"\n";
+        $html .= "{$indent}           class=\"{$cls}__link {{$next_var}.link_classes}\"\n";
         $html .= "{$indent}           role=\"menuitem\">\n";
         $html .= "{$indent}          {{$next_var}.title}\n";
         $html .= "{$indent}        </a>";
 
-        // A3: Toggle button for submenu items with children
+        // Toggle button for submenu items with children
         if ( $depth < $max_depth ) {
             $html .= "\n{$indent}        {#if {$next_var}.children}\n";
-            $html .= "{$indent}        <button class=\"{$cls}__submenu-toggle\" aria-label=\"Toggle submenu\"></button>\n";
+            $html .= "{$indent}        <button class=\"{$cls}__submenu-toggle\" aria-label=\"Toggle submenu\" tabindex=\"-1\">\n";
+            $html .= "{$indent}          <span class=\"{$cls}__submenu-icon\" aria-hidden=\"true\"></span>\n";
+            $html .= "{$indent}        </button>\n";
             $html .= "{$indent}        {/if}";
         }
 
@@ -256,56 +252,56 @@ class Etch_Navigation_Generator {
         $has_mobile = $this->has_mobile_support( $settings );
         $desktop_depth = isset( $settings['submenu_depth_desktop'] ) ? intval( $settings['submenu_depth_desktop'] ) : 1;
 
-        $html = '<nav class="' . $cls . '" role="navigation" aria-label="Main navigation">
-  <div class="' . $cls . '__container">';
+        $html = '';
 
+        // Hamburger button — outside <nav>, linked via aria-controls
         if ( $has_mobile ) {
-            $html .= '
-    <button class="' . $cls . '__hamburger"
-            aria-label="Toggle navigation menu"
-            aria-expanded="false"
-            aria-controls="main-menu">
-      <span class="' . $cls . '__hamburger-line"></span>
-      <span class="' . $cls . '__hamburger-line"></span>
-      <span class="' . $cls . '__hamburger-line"></span>
-    </button>';
+            $html .= '<button class="' . $cls . '__hamburger" type="button"
+        aria-controls="' . $cls . '-nav"
+        aria-expanded="false"
+        aria-label="Toggle navigation menu">
+  <span class="' . $cls . '__hamburger-line"></span>
+  <span class="' . $cls . '__hamburger-line"></span>
+  <span class="' . $cls . '__hamburger-line"></span>
+</button>
+
+';
         }
 
+        // Nav element — modifier classes for position + behaviour
+        $nav_classes = $cls;
+        if ( $has_mobile ) {
+            $position = isset( $settings['menu_position'] ) ? $settings['menu_position'] : 'left';
+            $behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
+            $nav_classes .= ' ' . $cls . '--' . $position . ' ' . $cls . '--' . $behavior;
+        }
+
+        $html .= '<nav class="' . $nav_classes . '" id="' . $cls . '-nav" role="navigation" aria-label="Main navigation">
+  <ul class="' . $cls . '__list" role="menubar">
+    {#loop options.menus.' . esc_html( $menu_name ) . ' as item}
+      <li class="' . $cls . '__item {item.state_classes}" role="none" data-level="1">';
+
         $html .= '
+        <a href="{item.url}"
+           class="' . $cls . '__link {item.link_classes}"
+           role="menuitem">
+          {item.title}
+        </a>';
 
-    <div class="' . $cls . '__menu">
-      <ul class="' . $cls . '__menu-list" id="main-menu" role="menubar">
-        {#loop options.menus.' . esc_html( $menu_name ) . ' as item}';
-
-        $li_classes = $cls . '__menu-item {#if item.current}is-current{/if} {#if item.current_parent}is-current-parent{/if}';
         if ( $desktop_depth > 0 ) {
-            $li_classes .= ' {#if item.children}has-submenu{/if}';
-        }
-
-        $html .= '
-          <li class="' . $li_classes . '" role="none">';
-
-        $html .= '
-            <a href="{item.url}"
-               class="' . $cls . '__menu-link {#if item.current}is-active{/if}"
-               role="menuitem">
-              {item.title}
-            </a>';
-
-        if ( $desktop_depth > 0 ) {
             $html .= '
-            {#if item.children}
-            <button class="' . $cls . '__submenu-toggle" aria-label="Toggle submenu"></button>
-            {/if}';
-            $html .= $this->generate_submenu_html_direct( 1, $desktop_depth, '            ', 'item' );
+        {#if item.children}
+        <button class="' . $cls . '__submenu-toggle" aria-label="Toggle submenu" tabindex="-1">
+          <span class="' . $cls . '__submenu-icon" aria-hidden="true"></span>
+        </button>
+        {/if}';
+            $html .= $this->generate_submenu_html_direct( 1, $desktop_depth, '        ', 'item' );
         }
 
         $html .= '
-          </li>
-        {/loop}
-      </ul>
-    </div>
-  </div>
+      </li>
+    {/loop}
+  </ul>
 </nav>';
 
         return $html;
@@ -325,56 +321,56 @@ class Etch_Navigation_Generator {
         $has_mobile = $this->has_mobile_support( $settings );
         $desktop_depth = isset( $settings['submenu_depth_desktop'] ) ? intval( $settings['submenu_depth_desktop'] ) : 1;
 
-        $html = '<nav class="' . $cls . '" role="navigation" aria-label="Main navigation">
-  <div class="' . $cls . '__container">';
+        $html = '';
 
+        // Hamburger button — outside <nav>, linked via aria-controls
         if ( $has_mobile ) {
-            $html .= '
-    <button class="' . $cls . '__hamburger"
-            aria-label="Toggle navigation menu"
-            aria-expanded="false"
-            aria-controls="main-menu">
-      <span class="' . $cls . '__hamburger-line"></span>
-      <span class="' . $cls . '__hamburger-line"></span>
-      <span class="' . $cls . '__hamburger-line"></span>
-    </button>';
+            $html .= '<button class="' . $cls . '__hamburger" type="button"
+        aria-controls="' . $cls . '-nav"
+        aria-expanded="false"
+        aria-label="Toggle navigation menu">
+  <span class="' . $cls . '__hamburger-line"></span>
+  <span class="' . $cls . '__hamburger-line"></span>
+  <span class="' . $cls . '__hamburger-line"></span>
+</button>
+
+';
         }
 
+        // Nav element — modifier classes for position + behaviour
+        $nav_classes = $cls;
+        if ( $has_mobile ) {
+            $position = isset( $settings['menu_position'] ) ? $settings['menu_position'] : 'left';
+            $behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
+            $nav_classes .= ' ' . $cls . '--' . $position . ' ' . $cls . '--' . $behavior;
+        }
+
+        $html .= '<nav class="' . $nav_classes . '" id="' . $cls . '-nav" role="navigation" aria-label="Main navigation">
+  <ul class="' . $cls . '__list" role="menubar">
+    {#loop props.' . esc_html( $prop_name ) . ' as item}
+      <li class="' . $cls . '__item {item.state_classes}" role="none" data-level="1">';
+
         $html .= '
+        <a href="{item.url}"
+           class="' . $cls . '__link {item.link_classes}"
+           role="menuitem">
+          {item.title}
+        </a>';
 
-    <div class="' . $cls . '__menu">
-      <ul class="' . $cls . '__menu-list" id="main-menu" role="menubar">
-        {#loop props.' . esc_html( $prop_name ) . ' as item}';
-
-        $li_classes = $cls . '__menu-item {#if item.current}is-current{/if} {#if item.current_parent}is-current-parent{/if}';
         if ( $desktop_depth > 0 ) {
-            $li_classes .= ' {#if item.children}has-submenu{/if}';
-        }
-
-        $html .= '
-          <li class="' . $li_classes . '" role="none">';
-
-        $html .= '
-            <a href="{item.url}"
-               class="' . $cls . '__menu-link {#if item.current}is-active{/if}"
-               role="menuitem">
-              {item.title}
-            </a>';
-
-        if ( $desktop_depth > 0 ) {
             $html .= '
-            {#if item.children}
-            <button class="' . $cls . '__submenu-toggle" aria-label="Toggle submenu"></button>
-            {/if}';
-            $html .= $this->generate_submenu_html_component( 1, $desktop_depth, '            ', 'item' );
+        {#if item.children}
+        <button class="' . $cls . '__submenu-toggle" aria-label="Toggle submenu" tabindex="-1">
+          <span class="' . $cls . '__submenu-icon" aria-hidden="true"></span>
+        </button>
+        {/if}';
+            $html .= $this->generate_submenu_html_component( 1, $desktop_depth, '        ', 'item' );
         }
 
         $html .= '
-          </li>
-        {/loop}
-      </ul>
-    </div>
-  </div>
+      </li>
+    {/loop}
+  </ul>
 </nav>';
 
         return $html;
@@ -392,201 +388,531 @@ class Etch_Navigation_Generator {
         $desktop_depth = isset( $settings['submenu_depth_desktop'] ) ? intval( $settings['submenu_depth_desktop'] ) : 1;
 
         $cls = $this->cls;
+        $breakpoint = isset( $settings['mobile_breakpoint'] ) ? intval( $settings['mobile_breakpoint'] ) : 1200;
+        $breakpoint_up = $breakpoint + 1;
 
-        $css = ".{$cls} {
-  position: relative;
+        // CSS Custom Properties
+        $css = "/* ----------------------------------------
+   CSS Custom Properties (Tokens)
+   ---------------------------------------- */
+:root {
+  /* Colors */
+  --menu-clr-text: #2c3338;
+  --menu-clr-text-accent: #0073aa;
+  --menu-clr-bg: #ffffff;
+  --menu-clr-bg-accent: #f0f0f1;
+  --menu-clr-bg-hover: #f9f9f9;
+  --menu-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --menu-border-radius: 0px;
 
-  &__container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem 1.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }";
+  /* Spacing */
+  --menu-padding-x: 1.25rem;
+  --menu-padding-y: 0.75rem;
+  --menu-gap: 0.5rem;
+  --menu-padding-top: 80px;
 
+  /* Mobile dimensions */
+  --menu-mobile-width: 100%;
+  --menu-mobile-breakpoint: {$breakpoint}px;
+
+  /* Z-index layers */
+  --menu-z-hamburger: 1000;
+  --menu-z-nav: 999;
+  --menu-z-submenu: 1;
+
+  /* Transitions */
+  --menu-transition-duration: 0.2s;
+  --menu-transition-easing: ease-in-out;
+  --menu-hover-delay: 0.15s;
+
+  /* Submenu toggle */
+  --menu-toggle-size: 50px;
+}\n\n";
+
+        // Hamburger (outside <nav>)
         if ( $has_mobile ) {
             $animation_type = isset( $settings['hamburger_animation'] ) ? $settings['hamburger_animation'] : 'spin';
             $hamburger_animation = $this->get_hamburger_animation( $animation_type );
 
+            $css .= "/* ----------------------------------------
+   Hamburger Button
+   ---------------------------------------- */
+.{$cls}__hamburger {
+  display: none;
+  background: var(--menu-clr-bg);
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: var(--menu-z-hamburger);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  gap: 5px;
+
+  @media (max-width: {$breakpoint}px) {
+    display: flex;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--menu-clr-text-accent);
+    outline-offset: 2px;
+  }
+}
+
+.{$cls}__hamburger-line {
+  display: block;
+  width: 2rem;
+  height: 3px;
+  background-color: var(--menu-clr-text);
+  border-radius: 3px;
+  transition: all 0.4s ease;
+  transform-origin: center center;
+}
+
+{$hamburger_animation}\n\n";
+        }
+
+        // Base navigation — nav stays in normal flow
+        $css .= "/* ----------------------------------------
+   Base Navigation
+   ---------------------------------------- */
+.{$cls} {
+  background: var(--menu-clr-bg);
+  color: var(--menu-clr-text);
+
+  @media (min-width: {$breakpoint_up}px) {
+    position: relative;
+    width: 100%;
+  }
+}\n\n";
+
+        // Menu panel wrapper — slides on/off screen on mobile.
+        // Hamburger is a sibling, so it stays visible.
+        if ( $has_mobile ) {
+            $css .= "/* ----------------------------------------
+   Menu Panel (slides on mobile)
+   ---------------------------------------- */
+.{$cls}__menu {
+  @media (max-width: {$breakpoint}px) {
+    position: fixed;
+    z-index: var(--menu-z-nav);
+    overflow-y: auto;
+    padding-top: var(--menu-padding-top);
+    background: var(--menu-clr-bg);
+    top: 0;
+    left: 0;
+    width: var(--menu-mobile-width);
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform var(--menu-transition-duration) var(--menu-transition-easing);
+
+    &.is-open {
+      transform: translateX(0);
+    }
+  }
+}\n\n";
+        }
+
+        // Navigation list
+        $css .= "/* ----------------------------------------
+   Navigation List
+   ---------------------------------------- */
+.{$cls}__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+
+  @media (min-width: {$breakpoint_up}px) {
+    flex-direction: row;
+    gap: var(--menu-gap);
+    align-items: center;
+  }";
+
+        if ( $has_mobile ) {
             $css .= "
 
-  &__hamburger {
-    display: none;
+  @media (max-width: {$breakpoint}px) {
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 2rem;
-    height: 2rem;
+  }";
+        }
+
+        $css .= "
+}\n\n";
+
+        // Navigation items
+        $css .= "/* ----------------------------------------
+   Navigation Items
+   ---------------------------------------- */
+.{$cls}__item {
+  position: relative;";
+
+        if ( $has_mobile ) {
+            $css .= "
+
+  @media (max-width: {$breakpoint}px) {
+    width: 100%;
+    border-bottom: 1px solid var(--menu-clr-bg-accent);
+  }";
+        }
+
+        $css .= "
+}\n\n";
+
+        // Navigation links
+        $css .= "/* ----------------------------------------
+   Navigation Links
+   ---------------------------------------- */
+.{$cls}__link {
+  display: block;
+  padding: var(--menu-padding-y) var(--menu-padding-x);
+  color: var(--menu-clr-text);
+  text-decoration: none;
+  transition:
+    background-color var(--menu-transition-duration) var(--menu-transition-easing),
+    color var(--menu-transition-duration) var(--menu-transition-easing);
+
+  &:hover {
+    background-color: var(--menu-clr-bg-hover);
+    color: var(--menu-clr-text-accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--menu-clr-text-accent);
+    outline-offset: -2px;
+  }
+
+  &.current-page {
+    color: var(--menu-clr-text-accent);
+  }";
+
+        if ( $has_mobile ) {
+            $css .= "
+
+  .{$cls}__item.has-submenu > & {
+    @media (max-width: {$breakpoint}px) {
+      padding-right: calc(var(--menu-toggle-size) + var(--menu-padding-x));
+    }
+  }";
+        }
+
+        $css .= "
+}
+
+.{$cls}__item.current-parent > .{$cls}__link {
+  color: var(--menu-clr-text-accent);
+}\n\n";
+
+        // Submenus
+        if ( $desktop_depth > 0 ) {
+            $css .= "/* ----------------------------------------
+   Sub-menus
+   ---------------------------------------- */
+.{$cls}__sub-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  @media (min-width: {$breakpoint_up}px) {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    background: var(--menu-clr-bg);
+    box-shadow: var(--menu-box-shadow);
+    border-radius: var(--menu-border-radius);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition:
+      opacity var(--menu-transition-duration) var(--menu-transition-easing),
+      visibility var(--menu-transition-duration) var(--menu-transition-easing),
+      transform var(--menu-transition-duration) var(--menu-transition-easing);
+    z-index: var(--menu-z-submenu);
+
+    /* Show submenu on parent hover/focus */
+    .{$cls}__item:hover > &,
+    .{$cls}__item:focus-within > & {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition-delay: var(--menu-hover-delay);
+    }
+
+    /* Nested sub-menus cascade right */
+    .{$cls}__sub-menu & {
+      top: 0;
+      left: 100%;
+      transform: translateX(1px);
+
+      .{$cls}__item:hover > &,
+      .{$cls}__item:focus-within > & {
+        transform: translateX(1px);
+      }
+    }
+
+    /* Cascade left when near edge (added via JS) */
+    .{$cls}__sub-menu.cascade-left & {
+      left: auto;
+      right: 100%;
+      transform: translateX(1px);
+
+      .{$cls}__item:hover > &,
+      .{$cls}__item:focus-within > & {
+        transform: translateX(0);
+      }
+    }
+  }";
+
+            if ( $has_mobile ) {
+                $css .= "
+
+  @media (max-width: {$breakpoint}px) {
+    border-top: 1px solid var(--menu-clr-bg-accent);
+
+    .{$cls}__item:last-of-type {
+      border-bottom: 0;
+    }
+
+    .{$cls}__item a {
+      padding-left: 40px;
+    }
+
+    .{$cls}__sub-menu .{$cls}__item a {
+      padding-left: 70px;
+    }
+  }";
+            }
+
+            $css .= "
+}\n\n";
+        }
+
+        // Submenu toggle button
+        $css .= "/* ----------------------------------------
+   Submenu Toggle Button (Mobile)
+   ---------------------------------------- */
+.{$cls}__submenu-toggle {
+  display: none;";
+
+        if ( $has_mobile ) {
+            $css .= "
+
+  @media (max-width: {$breakpoint}px) {
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--menu-toggle-size);
+    height: var(--menu-toggle-size);
     background: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
-    z-index: 1000;
-    gap: 5px;
-
-    &:focus {
-      outline: 2px solid #0073aa;
-      outline-offset: 4px;
-    }
-  }
-
-  &__hamburger-line {
-    display: block;
-    width: 2rem;
-    height: 3px;
-    background-color: #2c3338;
-    border-radius: 3px;
-    transition: all 0.4s ease;
-    transform-origin: center center;
-  }
-
-  {$hamburger_animation}";
-        }
-
-        $css .= "
-
-  &__menu {
-    display: flex;
+    z-index: 1;
     align-items: center;
-  }
+    justify-content: center;
 
-  &__menu-list {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    gap: 2rem;
-  }
-
-  &__menu-item {
-    position: relative;";
-
-        // Desktop: always show submenus on hover (submenu_behavior only affects mobile)
-        if ( $desktop_depth > 0 ) {
-            $css .= "
-
-    &.has-submenu {
-      &:hover > .{$cls}__submenu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-      }
-    }";
-        }
-
-        $css .= "
-  }
-
-  &__menu-link {
-    text-decoration: none;
-    color: #2c3338;
-    font-weight: 500;
-    font-size: 1rem;
-    padding: 0.5rem 0;
-    display: block;
-    transition: color 0.2s ease;
-
-    &:hover,
-    &:focus {
-      color: #0073aa;
+    &:focus-visible {
+      outline: 2px solid var(--menu-clr-text-accent);
+      outline-offset: -2px;
     }
-
-    &.is-active {
-      color: #0073aa;
-      font-weight: 600;
-    }
-  }
-
-  &__menu-item.is-current > .{$cls}__menu-link,
-  &__menu-item.is-current-parent > .{$cls}__menu-link {
-    color: #0073aa;
-  }";
-
-        if ( $desktop_depth > 0 ) {
-            // Desktop submenu: always hidden by default, revealed on hover
-            $css .= "
-
-  &__submenu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: white;
-    list-style: none;
-    margin: 0;
-    padding: 0.5rem 0;
-    min-width: 200px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-radius: 4px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-    z-index: 100;
-  }
-
-  &__submenu-item {
-    margin: 0;
-
-    &.has-submenu {
-      position: relative;
-
-      &:hover > .{$cls}__submenu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateX(0);
-      }
-
-      > .{$cls}__submenu {
-        top: 0;
-        left: 100%;
-        transform: translateX(-10px);
-      }
-    }
-  }
-
-  &__submenu-link {
-    display: block;
-    padding: 0.75rem 1.25rem;
-    color: #2c3338;
-    text-decoration: none;
-    font-size: 0.9375rem;
-    transition: background-color 0.2s ease;
-
-    &:hover,
-    &:focus {
-      background-color: #f0f0f1;
-      color: #0073aa;
-    }
-
-    &.is-active {
-      background-color: #e5f5fa;
-      color: #0073aa;
-      font-weight: 500;
-    }
-  }
-
-  &__submenu-item.is-current > .{$cls}__submenu-link,
-  &__submenu-item.is-current-parent > .{$cls}__submenu-link {
-    color: #0073aa;
   }";
         }
 
-        // A3: Submenu toggle button hidden on desktop (shown via mobile @media)
         $css .= "
+}\n\n";
 
-  &__submenu-toggle {
-    display: none;
-  }";
-
-        $css .= "\n}";
+        // Submenu icon (chevron)
+        $css .= "/* Submenu toggle icon (chevron) */
+.{$cls}__submenu-icon {";
 
         if ( $has_mobile ) {
-            $breakpoint = isset( $settings['mobile_breakpoint'] ) ? intval( $settings['mobile_breakpoint'] ) : 1200;
-            $menu_position = isset( $settings['menu_position'] ) ? $settings['menu_position'] : 'left';
-            $position_css = $this->get_menu_position( $menu_position, $breakpoint, $settings );
-            $css .= "\n\n{$position_css}";
+            $submenu_behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
+
+            $css .= "
+  @media (max-width: {$breakpoint}px) {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--menu-clr-text);
+    border-bottom: 2px solid var(--menu-clr-text);
+    transform: rotate(45deg);
+    transition: transform var(--menu-transition-duration) var(--menu-transition-easing);";
+
+            if ( 'accordion' === $submenu_behavior ) {
+                $css .= "
+
+    .{$cls}__item--submenu-open > .{$cls}__submenu-toggle & {
+      transform: rotate(-135deg);
+    }";
+            } elseif ( 'slide' === $submenu_behavior ) {
+                $css .= "
+
+    /* Slide mode: point right */
+    transform: rotate(-45deg);";
+            }
+
+            $css .= "
+  }";
         }
+
+        $css .= "
+}\n\n";
+
+        // Mobile-specific behaviour modes
+        if ( $has_mobile ) {
+            $submenu_behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
+
+            if ( 'accordion' === $submenu_behavior ) {
+                $css .= "/* ----------------------------------------
+   Mobile: Accordion Mode
+   ---------------------------------------- */
+@media (max-width: {$breakpoint}px) {
+  .{$cls}--accordion {
+    .{$cls}__sub-menu {
+      display: none;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--menu-transition-duration) var(--menu-transition-easing);
+    }
+
+    .{$cls}__item--submenu-open > .{$cls}__sub-menu {
+      display: block;
+      max-height: 1000px;
+    }
+  }
+}\n\n";
+            } elseif ( 'slide' === $submenu_behavior ) {
+                $css .= "/* ----------------------------------------
+   Mobile: Slide Mode
+   ---------------------------------------- */
+@media (max-width: {$breakpoint}px) {
+  .{$cls}--slide {
+    overflow: hidden;
+
+    > .{$cls}__list {
+      display: none;
+    }
+
+    .sliding-nav-panels {
+      position: absolute;
+      top: var(--menu-padding-top);
+      left: 0;
+      width: 100%;
+      height: calc(100% - var(--menu-padding-top));
+    }
+
+    .sliding-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: translateX(100%);
+      opacity: 0;
+      transition:
+        transform var(--menu-transition-duration) var(--menu-transition-easing),
+        opacity var(--menu-transition-duration) var(--menu-transition-easing);
+      pointer-events: none;
+      overflow-y: auto;
+    }
+
+    .sliding-panel.active {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sliding-panel.previous {
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+}
+
+/* Back button (slide mode) */
+.{$cls}__back {
+  display: none;
+
+  @media (max-width: {$breakpoint}px) {
+    .{$cls}--slide & {
+      display: block;
+      border-bottom: 1px solid var(--menu-clr-bg-accent);
+    }
+  }
+}
+
+.{$cls}__back-button {
+  width: 100%;
+  padding: var(--menu-padding-y) var(--menu-padding-x);
+  background: var(--menu-clr-bg);
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  color: var(--menu-clr-text);
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    background-color: var(--menu-clr-bg-hover);
+    color: var(--menu-clr-text-accent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--menu-clr-text-accent);
+    outline-offset: -2px;
+  }
+}
+
+.{$cls}__back-icon {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-left: 2px solid var(--menu-clr-text);
+  border-bottom: 2px solid var(--menu-clr-text);
+  transform: rotate(45deg);
+
+  .{$cls}__back-button:hover &,
+  .{$cls}__back-button:focus & {
+    border-color: var(--menu-clr-text-accent);
+  }
+}\n\n";
+            }
+
+            // Position modifiers
+            $menu_position = isset( $settings['menu_position'] ) ? $settings['menu_position'] : 'left';
+            $css .= $this->get_menu_position( $menu_position, $breakpoint, $settings );
+        }
+
+        // Utility classes
+        $css .= "
+/* ----------------------------------------
+   Utility Classes
+   ---------------------------------------- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+body.menu-open {
+  @media (max-width: {$breakpoint}px) {
+    overflow: hidden;
+  }
+}";
 
         return $css;
     }
@@ -603,213 +929,567 @@ class Etch_Navigation_Generator {
             return '';
         }
 
+        $cls = $this->cls;
+        $breakpoint = isset( $settings['mobile_breakpoint'] ) ? intval( $settings['mobile_breakpoint'] ) : 1200;
         $close_methods = isset( $settings['close_methods'] ) ? $settings['close_methods'] : array( 'hamburger', 'outside', 'esc' );
         $accessibility = isset( $settings['accessibility'] ) ? $settings['accessibility'] : array( 'focus_trap', 'scroll_lock', 'aria', 'keyboard' );
         $submenu_behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
-
-        $has_focus_trap = in_array( 'focus_trap', $accessibility );
-        $has_scroll_lock = in_array( 'scroll_lock', $accessibility );
         $has_outside_click = in_array( 'outside', $close_methods );
-        $has_esc_key = in_array( 'esc', $close_methods );
+        $has_scroll_lock = in_array( 'scroll_lock', $accessibility );
+        $has_keyboard = in_array( 'keyboard', $accessibility );
         $has_accordion = ( 'accordion' === $submenu_behavior );
+        $has_slide = ( 'slide' === $submenu_behavior );
 
-        $cls = $this->cls;
+        $js = "/**
+ * Accessible Navigation System
+ * Handles mobile menu, accordion/slide modes, edge detection, and keyboard navigation
+ */
+class AccessibleNavigation {
+  constructor(navElement) {
+    this.nav = navElement;
+    this.menu = navElement.querySelector('.{$cls}__menu');
+    this.hamburger = document.querySelector('[aria-controls=\"' + navElement.id + '\"]');
+    this.isOpen = false;
+    this.isMobile = false;
+    this.closeTimeout = null;";
 
-        $js = "(function() {
-  'use strict';
-
-  const globalNav = {
-    isOpen: false,
-    scrollPosition: 0,
-
-    init: function() {
-      this.hamburger = document.querySelector('.{$cls}__hamburger');
-      this.menu = document.querySelector('.{$cls}__menu');
-      this.nav = document.querySelector('.{$cls}');
-
-      if (!this.hamburger || !this.menu) {
-        return;
-      }
-
-      this.setupEventListeners();";
-
-        if ( $has_accordion ) {
-            $js .= "\n      this.setupSubmenuAccordion();";
+        if ( $has_slide ) {
+            $js .= "
+    this.slidingPanelsContainer = null;
+    this.panelCounter = 0;";
         }
 
         $js .= "
-    },
 
-    setupEventListeners: function() {
-      this.hamburger.addEventListener('click', this.toggleMenu.bind(this));";
+    this.init();
+  }
 
-        if ( $has_outside_click ) {
+  init() {
+    this.checkMobile();";
+
+        if ( $has_slide ) {
             $js .= "
-
-      document.addEventListener('click', this.handleClickOutside.bind(this));";
-        }
-
-        if ( $has_esc_key ) {
-            $js .= "
-
-      document.addEventListener('keydown', this.handleEscKey.bind(this));";
+    this.setupSlideMode();";
         }
 
         $js .= "
-    },
+    this.setupEventListeners();";
 
-    toggleMenu: function() {
-      this.isOpen = !this.isOpen;
-      document.body.classList.toggle('{$cls}--mobile-open', this.isOpen);
-      this.hamburger.classList.toggle('is-active', this.isOpen);
-      this.menu.classList.toggle('is-open', this.isOpen);
-
-      this.hamburger.setAttribute('aria-expanded', this.isOpen);";
-
-        if ( $has_scroll_lock ) {
+        if ( $has_keyboard ) {
             $js .= "
-
-      if (this.isOpen) {
-        this.lockScroll();
-      } else {
-        this.unlockScroll();
-      }";
+    this.setupKeyboardNavigation();";
         }
 
-        if ( $has_focus_trap ) {
-            $js .= "
+        $js .= "
+    this.checkSubMenuEdges();
 
-      if (this.isOpen) {
-        this.trapFocus();
-      } else {
-        this.releaseFocus();
+    window.addEventListener('resize', () => {
+      this.checkMobile();
+      this.checkSubMenuEdges();";
+
+        if ( $has_slide ) {
+            $js .= "
+      if (this.nav.dataset.behavior === 'slide') {
+        this.setupSlideMode();
       }";
         }
 
         $js .= "
-    },";
+    });
+  }
 
-        if ( $has_scroll_lock ) {
+  checkMobile() {
+    this.isMobile = window.innerWidth <= {$breakpoint};
+  }";
+
+        // Slide mode
+        if ( $has_slide ) {
             $js .= "
 
-    lockScroll: function() {
-      this.scrollPosition = window.pageYOffset;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-\${this.scrollPosition}px`;
-      document.body.style.width = '100%';
-    },
+  setupSlideMode() {
+    if (this.nav.dataset.behavior !== 'slide') return;
 
-    unlockScroll: function() {
-      document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('position');
-      document.body.style.removeProperty('top');
-      document.body.style.removeProperty('width');
-      window.scrollTo(0, this.scrollPosition);
-    },";
-        }
-
-        if ( $has_focus_trap ) {
-            $js .= "
-
-    trapFocus: function() {
-      const focusableElements = this.menu.querySelectorAll(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex=\"-1\"])'
-      );
-
-      this.firstFocusable = focusableElements[0];
-      this.lastFocusable = focusableElements[focusableElements.length - 1];
-
-      this.boundHandleFocusTrap = this.handleFocusTrap.bind(this);
-      this.menu.addEventListener('keydown', this.boundHandleFocusTrap);
-
-      if (this.firstFocusable) {
-        this.firstFocusable.focus();
+    if (!this.isMobile) {
+      if (this.slidingPanelsContainer) {
+        this.slidingPanelsContainer.remove();
+        this.slidingPanelsContainer = null;
+        this.panelCounter = 0;
       }
-    },
+      return;
+    }
 
-    releaseFocus: function() {
-      if (this.boundHandleFocusTrap) {
-        this.menu.removeEventListener('keydown', this.boundHandleFocusTrap);
+    if (this.slidingPanelsContainer) return;
+
+    this.panelCounter = 0;
+    this.slidingPanelsContainer = document.createElement('div');
+    this.slidingPanelsContainer.className = 'sliding-nav-panels';
+
+    const originalList = this.nav.querySelector('.{$cls}__list');
+
+    const createPanel = (menuList, parentItem) => {
+      this.panelCounter++;
+      const panelId = 'panel-' + this.panelCounter;
+
+      const panel = document.createElement('div');
+      panel.className = 'sliding-panel';
+      panel.setAttribute('data-panel-id', panelId);
+
+      const newList = document.createElement('ul');
+      newList.className = '{$cls}__list';
+      newList.setAttribute('role', 'menubar');
+
+      if (panelId !== 'panel-1' && parentItem) {
+        const parentLink = parentItem.querySelector('.{$cls}__link');
+        const parentText = parentLink.textContent;
+
+        const backItem = document.createElement('li');
+        backItem.className = '{$cls}__back';
+        backItem.setAttribute('role', 'none');
+
+        const backButton = document.createElement('button');
+        backButton.className = '{$cls}__back-button';
+        backButton.setAttribute('aria-label', 'Go back from ' + parentText);
+        backButton.innerHTML = '<span class=\"{$cls}__back-icon\" aria-hidden=\"true\"></span> Back';
+
+        backItem.appendChild(backButton);
+        newList.appendChild(backItem);
+
+        const titleItem = document.createElement('li');
+        titleItem.className = '{$cls}__item';
+        if (parentItem.classList.contains('current-page')) {
+          titleItem.classList.add('current-page');
+        }
+        if (parentItem.classList.contains('current-parent')) {
+          titleItem.classList.add('current-parent');
+        }
+        titleItem.setAttribute('role', 'none');
+
+        const titleLink = parentLink.cloneNode(true);
+        titleItem.appendChild(titleLink);
+        newList.appendChild(titleItem);
       }
-      this.hamburger.focus();
-    },
 
-    handleFocusTrap: function(e) {
-      if (e.key !== 'Tab') return;
+      const items = menuList.querySelectorAll(':scope > .{$cls}__item');
+      items.forEach((item) => {
+        const itemClone = item.cloneNode(false);
+        const link = item.querySelector('.{$cls}__link').cloneNode(true);
+        const hasSubmenu = item.classList.contains('has-submenu');
 
-      if (e.shiftKey) {
-        if (document.activeElement === this.firstFocusable) {
-          e.preventDefault();
-          this.lastFocusable.focus();
-        }
-      } else {
-        if (document.activeElement === this.lastFocusable) {
-          e.preventDefault();
-          this.firstFocusable.focus();
-        }
-      }
-    },";
+        itemClone.className = item.className;
+        itemClone.setAttribute('role', 'none');
+
+        if (item.hasAttribute('data-level')) {
+          itemClone.setAttribute('data-level', item.getAttribute('data-level'));
         }
 
-        if ( $has_outside_click ) {
-            $js .= "
+        itemClone.appendChild(link);
 
-    handleClickOutside: function(e) {
-      if (!this.isOpen) return;
+        if (hasSubmenu) {
+          const submenu = item.querySelector('.{$cls}__sub-menu');
+          const childPanelId = createPanel(submenu, item);
 
-      if (!this.menu.contains(e.target) && !this.hamburger.contains(e.target)) {
-        this.toggleMenu();
-      }
-    },";
+          itemClone.setAttribute('data-panel-target', childPanelId);
+
+          const toggle = document.createElement('button');
+          toggle.className = '{$cls}__submenu-toggle';
+          toggle.setAttribute('aria-label', 'Open ' + link.textContent.trim() + ' submenu');
+          toggle.setAttribute('tabindex', '-1');
+          toggle.innerHTML = '<span class=\"{$cls}__submenu-icon\" aria-hidden=\"true\"></span>';
+
+          itemClone.appendChild(toggle);
         }
 
-        if ( $has_esc_key ) {
-            $js .= "
+        newList.appendChild(itemClone);
+      });
 
-    handleEscKey: function(e) {
-      if (e.key === 'Escape' && this.isOpen) {
-        this.toggleMenu();
-      }
-    },";
-        }
+      panel.appendChild(newList);
+      this.slidingPanelsContainer.appendChild(panel);
 
-        if ( $has_accordion ) {
-            $js .= "
+      return panelId;
+    };
 
-    setupSubmenuAccordion: function() {
-      const submenuToggles = this.menu.querySelectorAll('.{$cls}__submenu-toggle');
+    createPanel(originalList, null);
 
-      submenuToggles.forEach(toggle => {
-        toggle.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const parent = toggle.parentElement;
-          const submenu = parent.querySelector('.{$cls}__submenu');
+    const rootPanel = this.slidingPanelsContainer.querySelector('[data-panel-id=\"panel-1\"]');
+    if (rootPanel) {
+      rootPanel.classList.add('active');
+    }
 
-          parent.classList.toggle('is-open');
+    this.menu.appendChild(this.slidingPanelsContainer);
+    this.setupSlidePanelListeners();
+  }
 
-          if (parent.classList.contains('is-open')) {
-            submenu.style.maxHeight = submenu.scrollHeight + 'px';
-          } else {
-            submenu.style.maxHeight = '0';
+  setupSlidePanelListeners() {
+    if (!this.slidingPanelsContainer) return;
+
+    this.slidingPanelsContainer.addEventListener('click', (e) => {
+      const toggle = e.target.closest('.{$cls}__submenu-toggle');
+      if (toggle) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const item = toggle.closest('.{$cls}__item');
+        const currentPanel = item.closest('.sliding-panel');
+        const targetPanelId = item.getAttribute('data-panel-target');
+        const targetPanel = this.slidingPanelsContainer.querySelector('[data-panel-id=\"' + targetPanelId + '\"]');
+
+        if (targetPanel) {
+          currentPanel.classList.remove('active');
+          currentPanel.classList.add('previous');
+          targetPanel.classList.add('active');
+          targetPanel.setAttribute('data-previous-panel', currentPanel.getAttribute('data-panel-id'));
+
+          const firstLink = targetPanel.querySelector('.{$cls}__link');
+          if (firstLink) {
+            setTimeout(() => firstLink.focus(), 50);
           }
-        });
+        }
+      }
+
+      const backButton = e.target.closest('.{$cls}__back-button');
+      if (backButton) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const currentPanel = backButton.closest('.sliding-panel');
+        const previousPanelId = currentPanel.getAttribute('data-previous-panel');
+        const previousPanel = this.slidingPanelsContainer.querySelector('[data-panel-id=\"' + previousPanelId + '\"]');
+
+        if (previousPanel) {
+          currentPanel.classList.remove('active');
+          previousPanel.classList.remove('previous');
+          previousPanel.classList.add('active');
+
+          const triggeringItem = previousPanel.querySelector('[data-panel-target=\"' + currentPanel.getAttribute('data-panel-id') + '\"]');
+          if (triggeringItem) {
+            const link = triggeringItem.querySelector('.{$cls}__link');
+            if (link) {
+              setTimeout(() => link.focus(), 50);
+            }
+          }
+        }
+      }
+    });
+  }";
+        }
+
+        // Event listeners
+        $js .= "
+
+  setupEventListeners() {
+    if (this.hamburger) {
+      this.hamburger.addEventListener('click', () => this.toggleMenu());
+    }";
+
+        if ( $has_outside_click ) {
+            $js .= "
+
+    document.addEventListener('click', (e) => {
+      if (this.isMobile && this.isOpen) {
+        if (!this.nav.contains(e.target) && this.hamburger && !this.hamburger.contains(e.target)) {
+          this.closeMenu();
+        }
+      }
+    });";
+        }
+
+        if ( $has_accordion ) {
+            $js .= "
+
+    if (this.nav.dataset.behavior === 'accordion') {
+      const toggles = this.nav.querySelectorAll('.{$cls}__submenu-toggle');
+      toggles.forEach((toggle) => {
+        toggle.addEventListener('click', (e) => this.handleAccordionToggle(e));
       });
     }";
         }
 
         $js .= "
-  };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      globalNav.init();
-    });
-  } else {
-    globalNav.init();
+    if (!this.isMobile) {
+      this.setupDesktopHover();
+    }
+  }";
+
+        // Accordion toggle
+        if ( $has_accordion ) {
+            $js .= "
+
+  handleAccordionToggle(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const toggle = e.currentTarget;
+    const parentItem = toggle.closest('.{$cls}__item');
+    const link = parentItem.querySelector('.{$cls}__link');
+    const isOpen = parentItem.classList.contains('{$cls}__item--submenu-open');
+
+    if (isOpen) {
+      parentItem.classList.remove('{$cls}__item--submenu-open');
+      link.setAttribute('aria-expanded', 'false');
+      const label = toggle.getAttribute('aria-label').replace('Close', 'Open');
+      toggle.setAttribute('aria-label', label);
+    } else {
+      parentItem.classList.add('{$cls}__item--submenu-open');
+      link.setAttribute('aria-expanded', 'true');
+      const label = toggle.getAttribute('aria-label').replace('Open', 'Close');
+      toggle.setAttribute('aria-label', label);
+    }
+  }";
+        }
+
+        // Toggle / Open / Close menu
+        $js .= "
+
+  toggleMenu() {
+    if (this.isOpen) {
+      this.closeMenu();
+    } else {
+      this.openMenu();
+    }
   }
-})();";
+
+  openMenu() {
+    this.isOpen = true;
+    this.menu.classList.add('is-open');
+    if (this.hamburger) {
+      this.hamburger.classList.add('is-active');
+      this.hamburger.setAttribute('aria-expanded', 'true');
+    }
+    document.body.classList.add('menu-open');
+    document.body.style.overflow = 'hidden';
+
+    const firstLink = this.menu.querySelector('.{$cls}__link');
+    if (firstLink) {
+      firstLink.focus();
+    }
+  }
+
+  closeMenu() {
+    this.isOpen = false;
+    this.menu.classList.remove('is-open');
+    if (this.hamburger) {
+      this.hamburger.classList.remove('is-active');
+      this.hamburger.setAttribute('aria-expanded', 'false');
+    }
+    document.body.classList.remove('menu-open');
+    document.body.style.overflow = '';";
+
+        if ( $has_slide ) {
+            $js .= "
+
+    if (this.slidingPanelsContainer) {
+      setTimeout(() => {
+        const panels = this.slidingPanelsContainer.querySelectorAll('.sliding-panel');
+        panels.forEach((panel) => {
+          panel.classList.remove('active', 'previous');
+        });
+        const rootPanel = this.slidingPanelsContainer.querySelector('[data-panel-id=\"panel-1\"]');
+        if (rootPanel) {
+          rootPanel.classList.add('active');
+        }
+      }, 300);
+    }";
+        }
+
+        if ( $has_accordion ) {
+            $js .= "
+
+    this.closeAllAccordionSubmenus();";
+        }
+
+        $js .= "
+
+    if (this.hamburger) {
+      this.hamburger.focus();
+    }
+  }";
+
+        // Close all accordion submenus
+        if ( $has_accordion ) {
+            $js .= "
+
+  closeAllAccordionSubmenus() {
+    const openItems = this.nav.querySelectorAll('.{$cls}__item--submenu-open');
+    openItems.forEach((item) => {
+      item.classList.remove('{$cls}__item--submenu-open');
+      const link = item.querySelector('.{$cls}__link');
+      if (link) {
+        link.setAttribute('aria-expanded', 'false');
+      }
+      const toggle = item.querySelector('.{$cls}__submenu-toggle');
+      if (toggle) {
+        const label = toggle.getAttribute('aria-label').replace('Close', 'Open');
+        toggle.setAttribute('aria-label', label);
+      }
+    });
+  }";
+        }
+
+        // Desktop hover
+        $js .= "
+
+  setupDesktopHover() {
+    const itemsWithSubmenus = this.nav.querySelectorAll('.{$cls}__item.has-submenu');
+
+    itemsWithSubmenus.forEach((item) => {
+      const link = item.querySelector('.{$cls}__link');
+
+      item.addEventListener('mouseenter', () => {
+        if (!this.isMobile) {
+          clearTimeout(this.closeTimeout);
+
+          const siblings = item.parentElement.querySelectorAll(':scope > .{$cls}__item.has-submenu');
+          siblings.forEach((sibling) => {
+            if (sibling !== item) {
+              sibling.classList.remove('{$cls}__item--submenu-open');
+              const siblingLink = sibling.querySelector('.{$cls}__link');
+              if (siblingLink) {
+                siblingLink.setAttribute('aria-expanded', 'false');
+              }
+            }
+          });
+
+          item.classList.add('{$cls}__item--submenu-open');
+          link.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      item.addEventListener('mouseleave', () => {
+        if (!this.isMobile) {
+          this.closeTimeout = setTimeout(() => {
+            item.classList.remove('{$cls}__item--submenu-open');
+            link.setAttribute('aria-expanded', 'false');
+          }, 200);
+        }
+      });
+    });
+  }
+
+  checkSubMenuEdges() {
+    if (this.isMobile) return;
+
+    const subMenus = this.nav.querySelectorAll('.{$cls}__sub-menu .{$cls}__sub-menu');
+    subMenus.forEach((submenu) => {
+      const parentItem = submenu.closest('.{$cls}__item');
+      const wasOpen = parentItem.classList.contains('{$cls}__item--submenu-open');
+      if (!wasOpen) {
+        parentItem.classList.add('{$cls}__item--submenu-open');
+      }
+
+      const rect = submenu.getBoundingClientRect();
+      if (rect.right > window.innerWidth - 20) {
+        parentItem.classList.add('cascade-left');
+      } else {
+        parentItem.classList.remove('cascade-left');
+      }
+
+      if (!wasOpen) {
+        parentItem.classList.remove('{$cls}__item--submenu-open');
+      }
+    });
+  }";
+
+        // Keyboard navigation
+        if ( $has_keyboard ) {
+            $js .= "
+
+  setupKeyboardNavigation() {
+    const menuItems = this.nav.querySelectorAll('[role=\"menuitem\"]');
+
+    menuItems.forEach((item) => {
+      item.addEventListener('keydown', (e) => {
+        const parentItem = item.closest('.{$cls}__item');
+        const parentList = item.closest('ul');
+        const isTopLevel = parentList.classList.contains('{$cls}__list');
+        const hasSubmenu = parentItem.classList.contains('has-submenu');
+        const submenu = parentItem.querySelector('.{$cls}__sub-menu');
+
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            this.focusNextItem(item, parentList);
+            break;
+
+          case 'ArrowUp':
+            e.preventDefault();
+            this.focusPreviousItem(item, parentList);
+            break;
+
+          case 'ArrowRight':
+            e.preventDefault();
+            if (hasSubmenu && !this.isMobile) {
+              parentItem.classList.add('{$cls}__item--submenu-open');
+              item.setAttribute('aria-expanded', 'true');
+              const firstSubmenuItem = submenu.querySelector('[role=\"menuitem\"]');
+              if (firstSubmenuItem) {
+                firstSubmenuItem.focus();
+              }
+            } else if (isTopLevel && !this.isMobile) {
+              this.focusNextItem(item, parentList);
+            }
+            break;
+
+          case 'ArrowLeft':
+            e.preventDefault();
+            if (!isTopLevel && !this.isMobile) {
+              const parentMenuItem = parentList.closest('.{$cls}__item');
+              const parentLink = parentMenuItem.querySelector('.{$cls}__link');
+              parentMenuItem.classList.remove('{$cls}__item--submenu-open');
+              parentLink.setAttribute('aria-expanded', 'false');
+              parentLink.focus();
+            } else if (isTopLevel && !this.isMobile) {
+              this.focusPreviousItem(item, parentList);
+            }
+            break;
+
+          case 'Escape':
+            e.preventDefault();
+            if (this.isMobile && this.isOpen) {
+              this.closeMenu();
+            } else if (!isTopLevel) {
+              const parentMenuItem = parentList.closest('.{$cls}__item');
+              const parentLink = parentMenuItem.querySelector('.{$cls}__link');
+              parentMenuItem.classList.remove('{$cls}__item--submenu-open');
+              parentLink.setAttribute('aria-expanded', 'false');
+              parentLink.focus();
+            }
+            break;
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.isMobile && this.isOpen) {
+        this.closeMenu();
+      }
+    });
+  }
+
+  focusNextItem(currentItem, parentList) {
+    const items = Array.from(parentList.querySelectorAll(':scope > .{$cls}__item > [role=\"menuitem\"]'));
+    const currentIndex = items.indexOf(currentItem);
+    const nextIndex = (currentIndex + 1) % items.length;
+    items[nextIndex].focus();
+  }
+
+  focusPreviousItem(currentItem, parentList) {
+    const items = Array.from(parentList.querySelectorAll(':scope > .{$cls}__item > [role=\"menuitem\"]'));
+    const currentIndex = items.indexOf(currentItem);
+    const previousIndex = currentIndex === 0 ? items.length - 1 : currentIndex - 1;
+    items[previousIndex].focus();
+  }";
+        }
+
+        $js .= "
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const navs = document.querySelectorAll('.{$cls}');
+  navs.forEach((nav) => {
+    new AccessibleNavigation(nav);
+  });
+});";
 
         return $js;
     }
@@ -828,68 +1508,41 @@ class Etch_Navigation_Generator {
         $cls = $this->cls;
 
         $animations = array(
-            'spin' => "&__hamburger.is-active {
-    .{$cls}__hamburger-line {
-      &:nth-child(1) {
-        transform: translateY(8px) rotate(225deg);
-      }
-
-      &:nth-child(2) {
-        opacity: 0;
-        transform: scaleX(0);
-      }
-
-      &:nth-child(3) {
-        transform: translateY(-8px) rotate(-225deg);
-      }
-    }
-  }",
-            'squeeze' => "&__hamburger.is-active {
-    .{$cls}__hamburger-line {
-      &:nth-child(1) {
-        transform: translateY(8px) rotate(45deg);
-      }
-
-      &:nth-child(2) {
-        opacity: 0;
-        transform: scaleX(0);
-      }
-
-      &:nth-child(3) {
-        transform: translateY(-8px) rotate(-45deg);
-      }
-    }
-  }",
-            'collapse' => "&__hamburger.is-active {
-    .{$cls}__hamburger-line {
-      &:nth-child(1) {
-        transform: translateY(8px) rotate(-45deg);
-      }
-
-      &:nth-child(2) {
-        opacity: 0;
-      }
-
-      &:nth-child(3) {
-        transform: translateY(-8px) rotate(45deg);
-      }
-    }
-  }",
-            'arrow' => "&__hamburger.is-active {
-    .{$cls}__hamburger-line {
-      &:nth-child(1) {
-        transform: translateX(-4px) rotate(-45deg) scaleX(0.55);
-      }
-
-      &:nth-child(2) {
-        transform: translateX(0);
-      }
-
-      &:nth-child(3) {
-        transform: translateX(-4px) rotate(45deg) scaleX(0.55);
-      }
-    }
-  }",
+            'spin' => ".{$cls}__hamburger.is-active .{$cls}__hamburger-line {
+  &:nth-child(1) {
+    transform: translateY(8px) rotate(225deg);
+  }
+  &:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  &:nth-child(3) {
+    transform: translateY(-8px) rotate(-225deg);
+  }
+}",
+            'squeeze' => ".{$cls}__hamburger.is-active .{$cls}__hamburger-line {
+  &:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+  &:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  &:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+}",
+            'collapse' => ".{$cls}__hamburger.is-active .{$cls}__hamburger-line {
+  &:nth-child(1) {
+    transform: translateY(8px) rotate(-45deg);
+  }
+  &:nth-child(2) {
+    opacity: 0;
+  }
+  &:nth-child(3) {
+    transform: translateY(-8px) rotate(45deg);
+  }
+}",
         );
 
         return isset( $animations[ $type ] ) ? $animations[ $type ] : $animations['spin'];
@@ -905,258 +1558,66 @@ class Etch_Navigation_Generator {
      */
     private function get_menu_position( $position, $breakpoint, $settings = array() ) {
         $cls = $this->cls;
-        $mobile_depth = isset( $settings['submenu_depth_mobile'] ) ? intval( $settings['submenu_depth_mobile'] ) : 1;
         $submenu_behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
 
-        $submenu_mobile_css = '';
-        // A5: Submenu link dash inset on mobile
-        $submenu_dash_css = "
-
-    &__submenu-link {
-      padding-left: 1.5rem;
-      position: relative;
-
-      &::before {
-        content: '—';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #2c3338;
-        font-size: 0.75rem;
-      }
-    }";
-
-        if ( $mobile_depth > 0 ) {
-            // Base mobile submenu reset — undo desktop absolute positioning
-            // A1: No background colours — leave unset for ETCH user control
-            $submenu_mobile_base = "
-    &__submenu {
-      position: static;
-      opacity: 1;
-      visibility: visible;
-      transform: none;
-      box-shadow: none;
-      margin-top: 0.5rem;
-      border-radius: 4px;
-      min-width: 0;";
-
-            if ( 'always' === $submenu_behavior ) {
-                // Always show — submenus expanded by default
-                $submenu_mobile_css = "
-{$submenu_mobile_base}
-      max-height: none;
-      overflow: visible;
-    }{$submenu_dash_css}";
-            } elseif ( 'clickable' === $submenu_behavior ) {
-                // Clickable — submenus hidden on mobile (links navigate, no toggle)
-                $submenu_mobile_css = "
-
-    &__submenu {
-      display: none;
-    }";
-            } else {
-                // Accordion — collapsed by default, toggle with .is-open
-                // A3: Chevron toggle button
-                $submenu_mobile_css = "
-{$submenu_mobile_base}
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-
-    &__menu-item.is-open > .{$cls}__submenu,
-    &__submenu-item.is-open > .{$cls}__submenu {
-      max-height: 500px;
-    }
-
-    &__menu-item.has-submenu,
-    &__submenu-item.has-submenu {
-      position: relative;
-    }
-
-    &__menu-link {
-      .has-submenu > & {
-        padding-right: 3rem;
-      }
-    }
-
-    &__submenu-toggle {
-      appearance: none;
-      background: none;
-      border: none;
-      padding: 1rem;
-      cursor: pointer;
-      position: absolute;
-      right: 0;
-      top: 0;
-      height: 100%;
-      display: flex;
-      align-items: center;
-
-      &::after {
-        content: '';
-        display: block;
-        width: 8px;
-        height: 8px;
-        border-right: 2px solid #2c3338;
-        border-bottom: 2px solid #2c3338;
-        transform: rotate(45deg);
-        transition: transform 0.3s ease;
-      }
-    }
-
-    .is-open > &__submenu-toggle::after {
-      transform: rotate(-135deg);
-    }{$submenu_dash_css}";
-            }
-        } else {
-            $submenu_mobile_css = "
-
-    &__submenu {
-      display: none;
-    }";
-        }
-
         $positions = array(
-            'left' => "@media (max-width: {$breakpoint}px) {
-  .{$cls} {
-    &__hamburger {
-      display: flex;
-    }
+            'left' => "/* ----------------------------------------
+   Mobile Position: Left
+   ---------------------------------------- */
+@media (max-width: {$breakpoint}px) {
+  .{$cls}--left {
+    top: 0;
+    left: 0;
+    width: var(--menu-mobile-width);
+    height: 100dvh;
+    transform: translateX(-100%);
 
-    &__menu {
-      position: fixed;
-      top: 60px;
-      left: 0;
-      height: calc(100vh - 60px);
-      width: 300px;
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      overflow-y: auto;
-      padding: 1rem 1.25rem;
-    }
-
-    &__menu.is-open {
+    &.is-open {
       transform: translateX(0);
-      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
     }
-
-    &__menu-list {
-      flex-direction: column;
-      gap: 0;
-    }
-
-    &__menu-link {
-      padding: 1rem 0;
-      border-bottom: 1px solid #f0f0f1;
-    }{$submenu_mobile_css}
   }
-}",
-            'right' => "@media (max-width: {$breakpoint}px) {
-  .{$cls} {
-    &__hamburger {
-      display: flex;
-    }
+}\n\n",
+            'right' => "/* ----------------------------------------
+   Mobile Position: Right
+   ---------------------------------------- */
+@media (max-width: {$breakpoint}px) {
+  .{$cls}--right {
+    top: 0;
+    right: 0;
+    left: auto;
+    width: var(--menu-mobile-width);
+    height: 100dvh;
+    transform: translateX(100%);
 
-    &__menu {
-      position: fixed;
-      top: 60px;
-      right: 0;
-      height: calc(100vh - 60px);
-      width: 300px;
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      overflow-y: auto;
-      padding: 1rem 1.25rem;
-    }
-
-    &__menu.is-open {
+    &.is-open {
       transform: translateX(0);
-      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
     }
-
-    &__menu-list {
-      flex-direction: column;
-      gap: 0;
-    }
-
-    &__menu-link {
-      padding: 1rem 0;
-      border-bottom: 1px solid #f0f0f1;
-    }{$submenu_mobile_css}
   }
-}",
-            'top' => "@media (max-width: {$breakpoint}px) {
-  .{$cls} {
-    &__hamburger {
-      display: flex;
-    }
+}\n\n",
+            'top' => "/* ----------------------------------------
+   Mobile Position: Top
+   ---------------------------------------- */
+@media (max-width: {$breakpoint}px) {
+  .{$cls}--top {
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-height: 100dvh;
+    transform: translateY(-100%);" . ( 'accordion' === $submenu_behavior ? "
 
-    &__menu {
-      position: fixed;
-      top: 60px;
-      left: 0;
-      right: 0;
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-      padding: 0 1.25rem;
-    }
+    &.{$cls}--accordion {
+      height: auto;
+    }" : '' ) . ( 'slide' === $submenu_behavior ? "
 
-    &__menu.is-open {
-      max-height: calc(100vh - 60px);
-      padding: 1rem 1.25rem;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+    &.{$cls}--slide {
+      height: 100dvh;
+    }" : '' ) . "
 
-    &__menu-list {
-      flex-direction: column;
-      gap: 0;
+    &.is-open {
+      transform: translateY(0);
     }
-
-    &__menu-link {
-      padding: 1rem 0;
-      border-bottom: 1px solid #f0f0f1;
-    }{$submenu_mobile_css}
   }
-}",
-            'full' => "@media (max-width: {$breakpoint}px) {
-  .{$cls} {
-    &__hamburger {
-      display: flex;
-    }
-
-    &__menu {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease, visibility 0.3s ease;
-      padding: 5rem 2rem 2rem;
-      overflow-y: auto;
-    }
-
-    &__menu.is-open {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    &__menu-list {
-      flex-direction: column;
-      gap: 2rem;
-      text-align: center;
-    }
-
-    &__menu-link {
-      font-size: 1.5rem;
-      padding: 1rem 0;
-    }{$submenu_mobile_css}
-  }
-}",
+}\n\n",
         );
 
         return isset( $positions[ $position ] ) ? $positions[ $position ] : $positions['left'];
@@ -1212,19 +1673,21 @@ class Etch_Navigation_Generator {
             }
         }
 
-        // Compute state_classes after hierarchy is built (so children is populated)
+        // Compute state_classes and link_classes after hierarchy is built
         foreach ( $menu_by_id as &$menu_item ) {
-            $state = array();
+            $state      = array();
+            $link_state = array();
             if ( ! empty( $menu_item['current'] ) ) {
-                $state[] = 'is-current';
+                $link_state[] = 'current-page';
             }
             if ( ! empty( $menu_item['current_parent'] ) ) {
-                $state[] = 'is-current-parent';
+                $state[] = 'current-parent';
             }
             if ( ! empty( $menu_item['children'] ) ) {
                 $state[] = 'has-submenu';
             }
             $menu_item['state_classes'] = implode( ' ', $state );
+            $menu_item['link_classes']  = implode( ' ', $link_state );
         }
         unset( $menu_item );
 
@@ -1248,6 +1711,7 @@ class Etch_Navigation_Generator {
         $menu_name = $this->get_menu_name( $settings );
         $approach = isset( $settings['approach'] ) ? $settings['approach'] : 'direct';
         $desktop_depth = isset( $settings['submenu_depth_desktop'] ) ? intval( $settings['submenu_depth_desktop'] ) : 1;
+        $cls = $this->cls;
 
         // Build the loop target
         if ( 'component' === $approach ) {
@@ -1255,59 +1719,55 @@ class Etch_Navigation_Generator {
                 ? $this->sanitize_prop_name( $settings['component_prop_name'] )
                 : 'menuItems';
             $loop_target = 'props.' . $prop_name;
-            $label_field = 'item.title';
-            $active_field = 'item.current';
         } else {
             $loop_target = 'options.menus.' . $menu_name;
-            $label_field = 'item.title';
-            $active_field = 'item.current';
         }
 
         // Build styles collection
         $styles = $this->build_etch_styles( $settings );
 
-        // Build the block tree
-        $nav_children = array();
-
-        // Hamburger button (only if mobile support enabled)
-        if ( $has_mobile ) {
-            $nav_children[] = $this->build_hamburger_block();
-        }
-
-        // Menu wrapper div > ul > loop > items
+        // --- Build the block tree ---
         $menu_item_children = array();
 
-        $cls = $this->cls;
-
-        // Link element with text
-        $link_attrs = array(
-            'href'  => '{item.url}',
-            'class' => $cls . '__menu-link',
-            'role'  => 'menuitem',
-        );
-
+        // Link element with text — uses {item.link_classes} for current-page
         $link_block = $this->make_element_block(
             'Menu Link',
             'a',
-            $link_attrs,
-            array( $cls . '-menu-link' ),
             array(
-                $this->make_text_block( 'Menu Label', '{' . $label_field . '}' ),
+                'href'  => '{item.url}',
+                'class' => $cls . '__link {item.link_classes}',
+                'role'  => 'menuitem',
+            ),
+            array( $cls . '-link' ),
+            array(
+                $this->make_text_block( 'Menu Label', '{item.title}' ),
             )
         );
         $menu_item_children[] = $link_block;
 
-        // Submenu condition + toggle button + nested loop (if depth > 0)
+        // Submenu condition + toggle button + icon span + nested loop
         if ( $desktop_depth > 0 ) {
-            // A3: Toggle button for accordion chevron
+            // Toggle button with icon span child
+            $icon_span = $this->make_element_block(
+                'Submenu Icon',
+                'span',
+                array(
+                    'class'       => $cls . '__submenu-icon',
+                    'aria-hidden' => 'true',
+                ),
+                array( $cls . '-submenu-icon' )
+            );
+
             $toggle_button = $this->make_element_block(
                 'Submenu Toggle',
                 'button',
                 array(
                     'class'      => $cls . '__submenu-toggle',
                     'aria-label' => 'Toggle submenu',
+                    'tabindex'   => '-1',
                 ),
-                array( $cls . '-submenu-toggle' )
+                array( $cls . '-submenu-toggle' ),
+                array( $icon_span )
             );
 
             $submenu_block = $this->build_submenu_blocks( 1, $desktop_depth, $approach );
@@ -1321,19 +1781,16 @@ class Etch_Navigation_Generator {
             $menu_item_children[] = $condition_block;
         }
 
-        // Menu item li - use pre-computed state_classes from data
-        // {#if} syntax doesn't work inside ETCH block tree attributes,
-        // so we use {item.state_classes} which is pre-computed in the data layer
-        $li_attrs = array(
-            'class' => $cls . '__menu-item {item.state_classes}',
-            'role'  => 'none',
-        );
-
+        // Menu item li — uses {item.state_classes} for has-submenu, current-parent
         $menu_item_block = $this->make_element_block(
             'Menu Item',
             'li',
-            $li_attrs,
-            array( $cls . '-menu-item' ),
+            array(
+                'class'      => $cls . '__item {item.state_classes}',
+                'role'       => 'none',
+                'data-level' => '1',
+            ),
+            array( $cls . '-item' ),
             $menu_item_children
         );
 
@@ -1344,59 +1801,73 @@ class Etch_Navigation_Generator {
             array( $menu_item_block )
         );
 
-        // UL
-        $ul_attrs = array(
-            'class' => $cls . '__menu-list',
-            'id'    => 'main-menu',
-            'role'  => 'menubar',
-        );
+        // UL — __list
         $ul_block = $this->make_element_block(
             'Menu List',
             'ul',
-            $ul_attrs,
-            array( $cls . '-menu-list' ),
+            array(
+                'class' => $cls . '__list',
+                'role'  => 'menubar',
+            ),
+            array( $cls . '-list' ),
             array( $loop_block )
         );
 
-        // Menu wrapper div
-        $menu_div_attrs = array(
-            'class' => $cls . '__menu',
-        );
-        $menu_div_block = $this->make_element_block(
-            'Menu Wrapper',
-            'div',
-            $menu_div_attrs,
-            array( $cls . '-menu' ),
-            array( $ul_block )
-        );
-
-        $nav_children[] = $menu_div_block;
-
-        // Container div
-        $container_attrs = array(
-            'class' => $cls . '__container',
-        );
-        $container_block = $this->make_element_block(
-            'Container',
-            'div',
-            $container_attrs,
-            array( $cls . '-container' ),
-            $nav_children
-        );
-
-        // Nav element (root block)
+        // Nav element — no modifier classes (ETCH controls class attribute via styles).
+        // Position and behaviour are stored as data attributes for JS to read.
         $nav_attrs = array(
             'class'      => $cls,
+            'id'         => $cls . '-nav',
             'role'       => 'navigation',
             'aria-label' => 'Main navigation',
         );
 
+        // Build nav children.
+        // ARCHITECTURE: The hamburger must be a SIBLING of the __menu wrapper,
+        // NOT inside it. On mobile, __menu gets position:fixed + transform to
+        // slide off-screen. If the hamburger were inside __menu, it would slide
+        // off-screen too and be invisible. As a sibling, it stays in flow.
+        //
+        // Structure: nav > [hamburger, __menu > ul > loop > items]
+        $nav_inner_blocks = array();
+
+        if ( $has_mobile ) {
+            $position = isset( $settings['menu_position'] ) ? $settings['menu_position'] : 'left';
+            $behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
+            $nav_attrs['data-position'] = $position;
+            $nav_attrs['data-behavior'] = $behavior;
+
+            // Hamburger as first child of nav (sibling of __menu)
+            $nav_inner_blocks[] = $this->build_hamburger_block();
+
+            // __menu wrapper div — THIS element gets position:fixed on mobile.
+            // The hamburger stays outside it, remaining visible.
+            $menu_wrapper = $this->make_element_block(
+                'Menu Panel',
+                'div',
+                array(
+                    'class' => $cls . '__menu',
+                ),
+                array( $cls . '-menu-all' ),
+                array( $ul_block )
+            );
+            $nav_inner_blocks[] = $menu_wrapper;
+        } else {
+            // No mobile — no wrapper needed, UL goes directly in nav
+            $nav_inner_blocks[] = $ul_block;
+        }
+
+        // Build nav style keys.
+        // CRITICAL: ETCH deduplicates styles by selector — only the LAST style with a
+        // given selector survives. ALL .{cls} CSS is combined into one 'nav-all' style.
+        $nav_style_keys = array( $cls . '-nav-all' );
+
         $nav_element = $this->make_element_block(
-            'Global Navigation',
+            'Navigation',
             'nav',
             $nav_attrs,
-            array( $cls . '-base' ),
-            array( $container_block )
+            $nav_style_keys,
+            $nav_inner_blocks
         );
 
         // Attach script to nav element if mobile support is enabled
@@ -1407,11 +1878,14 @@ class Etch_Navigation_Generator {
             );
         }
 
+        // Nav is the root block — no wrapper div needed
+        $root_block = $nav_element;
+
         // Top-level ETCH structure
         $etch_structure = array(
             'type'           => 'block',
             'version'        => 2,
-            'gutenbergBlock' => $nav_element,
+            'gutenbergBlock' => $root_block,
             'styles'         => $styles,
         );
 
@@ -1425,17 +1899,28 @@ class Etch_Navigation_Generator {
      */
     private function build_hamburger_block() {
         $cls = $this->cls;
+
+        // Line spans get only the base hamburger-line style.
+        // Animation styles (hamburger-active-line1/2/3) are left unreferenced
+        // in the styles collection — ETCH outputs all styles in the collection
+        // regardless of block references. We must NOT attach them here because
+        // ETCH adds the style selector's class to referencing blocks.
         $line1 = $this->make_element_block( 'Line 1', 'span', array( 'class' => $cls . '__hamburger-line' ), array( $cls . '-hamburger-line' ) );
         $line2 = $this->make_element_block( 'Line 2', 'span', array( 'class' => $cls . '__hamburger-line' ), array( $cls . '-hamburger-line' ) );
         $line3 = $this->make_element_block( 'Line 3', 'span', array( 'class' => $cls . '__hamburger-line' ), array( $cls . '-hamburger-line' ) );
 
         $button_attrs = array(
             'class'         => $cls . '__hamburger',
-            'aria-label'    => 'Toggle navigation menu',
+            'type'          => 'button',
+            'aria-controls' => $cls . '-nav',
             'aria-expanded' => 'false',
-            'aria-controls' => 'main-menu',
+            'aria-label'    => 'Toggle navigation menu',
         );
 
+        // Hamburger button gets base style only.
+        // Mobile display: flex comes from the mobile-responsive @media block
+        // (which targets {$s}__hamburger as a descendant of the nav element).
+        // ETCH outputs all styles in the collection regardless of block refs.
         return $this->make_element_block(
             'Hamburger Button',
             'button',
@@ -1455,24 +1940,22 @@ class Etch_Navigation_Generator {
      */
     private function build_submenu_blocks( $depth, $max_depth, $approach = 'direct' ) {
         $cls = $this->cls;
+        $data_level = $depth + 1;
 
         // In the ETCH block tree, loop blocks always use 'item' as the iterator
-        // variable (unlike raw HTML templates which use child/subchild).
-        // Each nested loop scopes 'item' to its own level automatically.
+        // variable. Each nested loop scopes 'item' to its own level automatically.
         $var_name = 'item';
 
-        // Submenu link with text
-        $link_attrs = array(
-            'href'  => '{' . $var_name . '.url}',
-            'class' => $cls . '__submenu-link',
-            'role'  => 'menuitem',
-        );
-
+        // Submenu link with text — shared __link class, uses {item.link_classes}
         $link_block = $this->make_element_block(
             'Submenu Link',
             'a',
-            $link_attrs,
-            array( $cls . '-submenu-link' ),
+            array(
+                'href'  => '{' . $var_name . '.url}',
+                'class' => $cls . '__link {' . $var_name . '.link_classes}',
+                'role'  => 'menuitem',
+            ),
+            array( $cls . '-link' ),
             array(
                 $this->make_text_block( 'Submenu Label', '{' . $var_name . '.title}' ),
             )
@@ -1482,15 +1965,27 @@ class Etch_Navigation_Generator {
 
         // Recurse for deeper submenus
         if ( $depth < $max_depth ) {
-            // A3: Toggle button for accordion chevron on nested submenu items
+            // Toggle button with icon span
+            $icon_span = $this->make_element_block(
+                'Submenu Icon',
+                'span',
+                array(
+                    'class'       => $cls . '__submenu-icon',
+                    'aria-hidden' => 'true',
+                ),
+                array( $cls . '-submenu-icon' )
+            );
+
             $toggle_button = $this->make_element_block(
                 'Submenu Toggle',
                 'button',
                 array(
                     'class'      => $cls . '__submenu-toggle',
                     'aria-label' => 'Toggle submenu',
+                    'tabindex'   => '-1',
                 ),
-                array( $cls . '-submenu-toggle' )
+                array( $cls . '-submenu-toggle' ),
+                array( $icon_span )
             );
 
             $deeper_submenu = $this->build_submenu_blocks( $depth + 1, $max_depth, $approach );
@@ -1504,38 +1999,36 @@ class Etch_Navigation_Generator {
             $li_children[] = $condition_block;
         }
 
-        // Submenu item li - use pre-computed state_classes from data
-        $li_attrs = array(
-            'class' => $cls . '__submenu-item {' . $var_name . '.state_classes}',
-            'role'  => 'none',
-        );
-
+        // Submenu item li — shared __item class, uses {item.state_classes}
         $li_block = $this->make_element_block(
             'Submenu Item',
             'li',
-            $li_attrs,
-            array( $cls . '-submenu-item' ),
+            array(
+                'class'      => $cls . '__item {' . $var_name . '.state_classes}',
+                'role'       => 'none',
+                'data-level' => (string) $data_level,
+            ),
+            array( $cls . '-item' ),
             $li_children
         );
 
-        // Loop over children — target is always 'item.children' since ETCH
-        // scopes each nested loop's 'item' to its own level
+        // Loop over children
         $loop_block = $this->make_loop_block(
             'Submenu Loop',
             'item.children',
             array( $li_block )
         );
 
-        // Submenu UL
-        $ul_attrs = array(
-            'class' => $cls . '__submenu ' . $cls . '__submenu--level-' . $depth,
-        );
-
+        // Submenu UL — __sub-menu with role="menu"
+        // Attach desktop positioning, hover reveal, and nested cascade styles
         return $this->make_element_block(
-            'Submenu Level ' . $depth,
+            'Sub-menu Level ' . $depth,
             'ul',
-            $ul_attrs,
-            array( $cls . '-submenu' ),
+            array(
+                'class' => $cls . '__sub-menu',
+                'role'  => 'menu',
+            ),
+            array( $cls . '-sub-menu' ),
             array( $loop_block )
         );
     }
@@ -1552,27 +2045,20 @@ class Etch_Navigation_Generator {
         $cls = $this->cls;
         $has_mobile = $this->has_mobile_support( $settings );
         $desktop_depth = isset( $settings['submenu_depth_desktop'] ) ? intval( $settings['submenu_depth_desktop'] ) : 1;
-        $submenu_behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
+        $breakpoint = isset( $settings['mobile_breakpoint'] ) ? intval( $settings['mobile_breakpoint'] ) : 1200;
+        $breakpoint_up = $breakpoint + 1;
 
         $styles = array();
 
-        // Base nav styles
-        $styles[ $cls . '-base' ] = array(
-            'type'       => 'class',
-            'selector'   => '.' . $cls,
-            'collection' => 'default',
-            'css'        => 'position: relative;',
-            'readonly'   => false,
-        );
+        // NOTE: CSS custom properties (:root tokens) are only in the CSS tab output.
+        // ETCH flat styles use hardcoded values because ETCH style objects with
+        // selector ':root' and type 'class' may not render correctly.
 
-        // Container
-        $styles[ $cls . '-container' ] = array(
-            'type'       => 'class',
-            'selector'   => '.' . $cls . '__container',
-            'collection' => 'default',
-            'css'        => "max-width: 1200px;\nmargin: 0 auto;\npadding: 1rem 1.25rem;\ndisplay: flex;\nalign-items: center;\njustify-content: space-between;",
-            'readonly'   => false,
-        );
+        // IMPORTANT: ETCH deduplicates/merges styles that share the same selector.
+        // Only the LAST style with a given selector value survives in the rendered CSS.
+        // Therefore, ALL CSS for selector '.{cls}' must be combined into ONE style entry.
+        // The base nav styles are merged into the combined 'nav-all' style below
+        // (inside get_flat_mobile_css), NOT declared as a separate style here.
 
         // Hamburger (only if mobile)
         if ( $has_mobile ) {
@@ -1580,7 +2066,7 @@ class Etch_Navigation_Generator {
                 'type'       => 'class',
                 'selector'   => '.' . $cls . '__hamburger',
                 'collection' => 'default',
-                'css'        => "display: none;\nflex-direction: column;\njustify-content: center;\nalign-items: center;\nwidth: 2rem;\nheight: 2rem;\nbackground: transparent;\nborder: none;\ncursor: pointer;\npadding: 0;\nz-index: 1000;\ngap: 5px;",
+                'css'        => "display: none;\nposition: absolute;\ntop: 0;\nleft: 0;\nbackground: #ffffff;\nborder: none;\ncursor: pointer;\npadding: 0;\nz-index: 1001;\nflex-direction: column;\njustify-content: center;\nalign-items: center;\nwidth: 30px;\nheight: 30px;\ngap: 5px;",
                 'readonly'   => false,
             );
 
@@ -1588,140 +2074,103 @@ class Etch_Navigation_Generator {
                 'type'       => 'class',
                 'selector'   => '.' . $cls . '__hamburger-line',
                 'collection' => 'default',
-                'css'        => "display: block;\nwidth: 2rem;\nheight: 3px;\nbackground-color: #2c3338;\nborder-radius: 3px;\ntransition: all 0.4s ease;\ntransform-origin: center center;",
+                'css'        => "display: block;\nwidth: 30px;\nheight: 3px;\nbackground-color: #2c3338;\nborder-radius: 3px;\ntransition: all 0.4s ease;\ntransform-origin: center center;",
                 'readonly'   => false,
             );
+
+            // Menu wrapper base style removed — its CSS is provided by the
+            // 'menu-all' style from get_flat_mobile_css() which has the same
+            // selector. ETCH deduplicates by selector, so only one can exist.
         }
 
-        // Menu wrapper
-        $styles[ $cls . '-menu' ] = array(
+        // Navigation list
+        $styles[ $cls . '-list' ] = array(
             'type'       => 'class',
-            'selector'   => '.' . $cls . '__menu',
+            'selector'   => '.' . $cls . '__list',
             'collection' => 'default',
-            'css'        => "display: flex;\nalign-items: center;",
+            'css'        => "list-style: none;\nmargin: 0;\npadding: 0;\ndisplay: flex;",
             'readonly'   => false,
         );
 
-        // Menu list
-        $styles[ $cls . '-menu-list' ] = array(
+        // Navigation item
+        $styles[ $cls . '-item' ] = array(
             'type'       => 'class',
-            'selector'   => '.' . $cls . '__menu-list',
-            'collection' => 'default',
-            'css'        => "display: flex;\nlist-style: none;\nmargin: 0;\npadding: 0;\ngap: 2rem;",
-            'readonly'   => false,
-        );
-
-        // Menu item
-        $styles[ $cls . '-menu-item' ] = array(
-            'type'       => 'class',
-            'selector'   => '.' . $cls . '__menu-item',
+            'selector'   => '.' . $cls . '__item',
             'collection' => 'default',
             'css'        => 'position: relative;',
             'readonly'   => false,
         );
 
-        // Menu link
-        $styles[ $cls . '-menu-link' ] = array(
+        // Navigation link — shared across all levels
+        $styles[ $cls . '-link' ] = array(
             'type'       => 'class',
-            'selector'   => '.' . $cls . '__menu-link',
+            'selector'   => '.' . $cls . '__link',
             'collection' => 'default',
-            'css'        => "text-decoration: none;\ncolor: #2c3338;\nfont-weight: 500;\nfont-size: 1rem;\npadding: 0.5rem 0;\ndisplay: block;\ntransition: color 0.2s ease;",
+            'css'        => "display: block;\npadding: 0.75rem 1.25rem;\ncolor: #2c3338;\ntext-decoration: none;\nfont-weight: 500;\ntransition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;",
             'readonly'   => false,
         );
 
-        // Menu link hover/focus
-        $styles[ $cls . '-menu-link-hover' ] = array(
+        // Link hover
+        $styles[ $cls . '-link-hover' ] = array(
             'type'       => 'class',
-            'selector'   => '.' . $cls . '__menu-link:hover, .' . $cls . '__menu-link:focus',
+            'selector'   => '.' . $cls . '__link:hover',
             'collection' => 'default',
-            'css'        => 'color: #0073aa;',
+            'css'        => "background-color: #f9f9f9;\ncolor: #0073aa;",
             'readonly'   => false,
         );
 
         // Current page link
-        $styles[ $cls . '-menu-item-current' ] = array(
+        $styles[ $cls . '-link-current' ] = array(
             'type'       => 'class',
-            'selector'   => '.' . $cls . '__menu-item.is-current > .' . $cls . '__menu-link, .' . $cls . '__menu-item.is-current-parent > .' . $cls . '__menu-link',
+            'selector'   => '.' . $cls . '__link.current-page',
             'collection' => 'default',
             'css'        => 'color: #0073aa;',
             'readonly'   => false,
         );
 
-        // Submenu styles (only if depth > 0)
-        // Desktop: always hidden by default, revealed on hover
-        // (submenu_behavior only affects mobile via the responsive @media styles)
+        // Current parent indicator
+        $styles[ $cls . '-item-current-parent' ] = array(
+            'type'       => 'class',
+            'selector'   => '.' . $cls . '__item.current-parent > .' . $cls . '__link',
+            'collection' => 'default',
+            'css'        => 'color: #0073aa;',
+            'readonly'   => false,
+        );
+
+        // Sub-menu styles (only if depth > 0)
+        // IMPORTANT: Desktop dropdown positioning (position:absolute, opacity:0,
+        // visibility:hidden) MUST be inside @media desktop-only. On mobile, submenus
+        // are handled by accordion/slide JS — the desktop hover/float behaviour must
+        // NOT leak into mobile, or submenus appear as floating blocks on hover.
         if ( $desktop_depth > 0 ) {
-            $styles[ $cls . '-submenu' ] = array(
+            $styles[ $cls . '-sub-menu' ] = array(
                 'type'       => 'class',
-                'selector'   => '.' . $cls . '__submenu',
+                'selector'   => '.' . $cls . '__sub-menu',
                 'collection' => 'default',
-                'css'        => "position: absolute;\ntop: 100%;\nleft: 0;\nbackground: white;\nlist-style: none;\nmargin: 0;\npadding: 0.5rem 0;\nmin-width: 200px;\nbox-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);\nborder-radius: 4px;\nopacity: 0;\nvisibility: hidden;\ntransform: translateY(-10px);\ntransition: all 0.2s ease;\nz-index: 100;",
+                'css'        => "list-style: none;\nmargin: 0;\npadding: 0;\n@media (min-width: {$breakpoint_up}px) {\n  position: absolute;\n  top: 100%;\n  left: 0;\n  min-width: 200px;\n  background: #ffffff;\n  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);\n  border-radius: 0px;\n  opacity: 0;\n  visibility: hidden;\n  transform: translateY(-10px);\n  transition: all 0.2s ease-in-out;\n  z-index: 1;\n}",
                 'readonly'   => false,
             );
 
-            // Show submenu on hover — top-level menu items
-            $styles[ $cls . '-menu-item-hover-submenu' ] = array(
+            // Show on hover/focus — desktop only
+            $styles[ $cls . '-sub-menu-hover' ] = array(
                 'type'       => 'class',
-                'selector'   => '.' . $cls . '__menu-item.has-submenu:hover > .' . $cls . '__submenu',
+                'selector'   => '.' . $cls . '__item:hover > .' . $cls . '__sub-menu, .' . $cls . '__item:focus-within > .' . $cls . '__sub-menu',
                 'collection' => 'default',
-                'css'        => "opacity: 1;\nvisibility: visible;\ntransform: translateY(0);",
+                'css'        => "@media (min-width: {$breakpoint_up}px) {\n  opacity: 1;\n  visibility: visible;\n  transform: translateY(0);\n  transition-delay: 0.15s;\n}",
                 'readonly'   => false,
             );
 
-            // Show nested submenu on hover — submenu items with children
-            $styles[ $cls . '-submenu-item-hover-submenu' ] = array(
+            // Nested sub-menus cascade right — desktop only
+            $styles[ $cls . '-sub-menu-nested' ] = array(
                 'type'       => 'class',
-                'selector'   => '.' . $cls . '__submenu-item.has-submenu:hover > .' . $cls . '__submenu',
+                'selector'   => '.' . $cls . '__sub-menu .' . $cls . '__sub-menu',
                 'collection' => 'default',
-                'css'        => "opacity: 1;\nvisibility: visible;\ntransform: translateX(0);",
-                'readonly'   => false,
-            );
-
-            // Nested submenus position (fly-out to the right)
-            $styles[ $cls . '-submenu-nested' ] = array(
-                'type'       => 'class',
-                'selector'   => '.' . $cls . '__submenu-item.has-submenu > .' . $cls . '__submenu',
-                'collection' => 'default',
-                'css'        => "top: 0;\nleft: 100%;\ntransform: translateX(-10px);",
-                'readonly'   => false,
-            );
-
-            $styles[ $cls . '-submenu-item' ] = array(
-                'type'       => 'class',
-                'selector'   => '.' . $cls . '__submenu-item',
-                'collection' => 'default',
-                'css'        => 'margin: 0;',
-                'readonly'   => false,
-            );
-
-            $styles[ $cls . '-submenu-link' ] = array(
-                'type'       => 'class',
-                'selector'   => '.' . $cls . '__submenu-link',
-                'collection' => 'default',
-                'css'        => "display: block;\npadding: 0.75rem 1.25rem;\ncolor: #2c3338;\ntext-decoration: none;\nfont-size: 0.9375rem;\ntransition: background-color 0.2s ease;",
-                'readonly'   => false,
-            );
-
-            // Submenu link hover state
-            $styles[ $cls . '-submenu-link-hover' ] = array(
-                'type'       => 'class',
-                'selector'   => '.' . $cls . '__submenu-link:hover',
-                'collection' => 'default',
-                'css'        => 'background-color: #f0f0f1;',
-                'readonly'   => false,
-            );
-
-            // Current parent highlight for submenu links
-            $styles[ $cls . '-submenu-item-current' ] = array(
-                'type'       => 'class',
-                'selector'   => '.' . $cls . '__submenu-item.is-current > .' . $cls . '__submenu-link, .' . $cls . '__submenu-item.is-current-parent > .' . $cls . '__submenu-link',
-                'collection' => 'default',
-                'css'        => 'color: #0073aa;',
+                'css'        => "@media (min-width: {$breakpoint_up}px) {\n  top: 0;\n  left: 100%;\n  transform: translateX(1px);\n}",
                 'readonly'   => false,
             );
         }
 
-        // A3: Submenu toggle button — hidden on desktop (shown via mobile @media)
+        // Submenu toggle button — hidden on desktop
         $styles[ $cls . '-submenu-toggle' ] = array(
             'type'       => 'class',
             'selector'   => '.' . $cls . '__submenu-toggle',
@@ -1730,12 +2179,20 @@ class Etch_Navigation_Generator {
             'readonly'   => false,
         );
 
+        // Submenu icon
+        $styles[ $cls . '-submenu-icon' ] = array(
+            'type'       => 'class',
+            'selector'   => '.' . $cls . '__submenu-icon',
+            'collection' => 'default',
+            'css'        => '',
+            'readonly'   => false,
+        );
+
         // Mobile / responsive styles
         if ( $has_mobile ) {
-            $breakpoint = isset( $settings['mobile_breakpoint'] ) ? intval( $settings['mobile_breakpoint'] ) : 1200;
             $menu_position = isset( $settings['menu_position'] ) ? $settings['menu_position'] : 'left';
             $animation_type = isset( $settings['hamburger_animation'] ) ? $settings['hamburger_animation'] : 'spin';
-            $mobile_depth = isset( $settings['submenu_depth_mobile'] ) ? intval( $settings['submenu_depth_mobile'] ) : 0;
+            $submenu_behavior = isset( $settings['submenu_behavior'] ) ? $settings['submenu_behavior'] : 'accordion';
 
             // Hamburger animation — flat selectors for is-active state
             $hamburger_animations = $this->get_flat_hamburger_animation( $animation_type );
@@ -1749,8 +2206,8 @@ class Etch_Navigation_Generator {
                 );
             }
 
-            // Mobile responsive styles — position-specific menu CSS
-            $mobile_css = $this->get_flat_mobile_css( $menu_position, $breakpoint, $mobile_depth, $submenu_behavior );
+            // Mobile responsive styles
+            $mobile_css = $this->get_flat_mobile_css( $menu_position, $breakpoint, $submenu_behavior );
             foreach ( $mobile_css as $key => $rule ) {
                 $styles[ $cls . '-' . $key ] = array(
                     'type'       => 'class',
@@ -1760,6 +2217,10 @@ class Etch_Navigation_Generator {
                     'readonly'   => false,
                 );
             }
+
+            // Body scroll lock is handled by JS inline (document.body.style.overflow).
+            // Cannot use a CSS style here because body is not inside .{cls} and ETCH
+            // wrapping would create an invalid descendant selector.
         }
 
         return $styles;
@@ -1775,6 +2236,8 @@ class Etch_Navigation_Generator {
         $cls = $this->cls;
         $base = '.' . $cls . '__hamburger.is-active .' . $cls . '__hamburger-line';
 
+        // Hamburger geometry: 3 lines, each 3px tall, with 5px gap (flexbox).
+        // Center-to-center distance between adjacent lines = gap(5) + lineHeight(3) = 8px.
         $animations = array(
             'spin' => array(
                 'line1' => "transform: translateY(8px) rotate(225deg);",
@@ -1790,11 +2253,6 @@ class Etch_Navigation_Generator {
                 'line1' => "transform: translateY(8px) rotate(-45deg);",
                 'line2' => "opacity: 0;",
                 'line3' => "transform: translateY(-8px) rotate(45deg);",
-            ),
-            'arrow' => array(
-                'line1' => "transform: translateX(-4px) rotate(-45deg) scaleX(0.55);",
-                'line2' => "transform: translateX(0);",
-                'line3' => "transform: translateX(-4px) rotate(45deg) scaleX(0.55);",
             ),
         );
 
@@ -1817,103 +2275,152 @@ class Etch_Navigation_Generator {
     }
 
     /**
-     * Get flat (non-nested) mobile CSS for ETCH styles
+     * Get flat mobile CSS for ETCH styles
      *
-     * Returns a single comprehensive @media block as a style rule,
-     * using fully-qualified flat selectors (no SCSS nesting).
+     * CRITICAL ARCHITECTURE:
+     * The <nav> stays in normal document flow at all times.
+     * A __menu wrapper div INSIDE the nav gets position:fixed + transform to
+     * slide off-screen on mobile. The hamburger is a SIBLING of __menu (both
+     * inside nav), so it stays visible when __menu slides away.
      *
-     * @param string $position         Menu position (left, right, top, full)
+     * Structure: nav > [hamburger (visible), __menu (slides) > ul > items]
+     *
+     * ETCH CONSTRAINTS:
+     * 1. ETCH deduplicates styles by selector — only the LAST style with a
+     *    given selector survives. Each selector must appear exactly ONCE.
+     * 2. ETCH wraps 'css' inside 'selector', so nested selectors become
+     *    descendant selectors (e.g. .nav { .nav__list { } } → .nav .nav__list).
+     *
+     * @param string $position         Menu position (left, right, top)
      * @param int    $breakpoint       Mobile breakpoint in px
-     * @param int    $mobile_depth     Mobile submenu depth
-     * @param string $submenu_behavior Submenu behavior (always, accordion, clickable)
-     * @return array Array with a single style rule containing the full responsive CSS
+     * @param string $submenu_behavior Submenu behavior (accordion, slide)
+     * @return array Array of style rules containing responsive CSS
      */
-    private function get_flat_mobile_css( $position, $breakpoint, $mobile_depth, $submenu_behavior = 'accordion' ) {
+    private function get_flat_mobile_css( $position, $breakpoint, $submenu_behavior = 'accordion' ) {
         $cls = $this->cls;
         $s   = '.' . $cls;
+        $breakpoint_up = $breakpoint + 1;
 
-        // Position-specific menu styles
-        // A1: No background colours — leave unset for ETCH user control
-        // A2: No box-shadow on base state — only on .is-open to prevent bleed
-        // A4: Menu aligned below hamburger with top: 60px offset
+        // --- Position-specific __menu values (for mobile @media) ---
+        // These apply to __menu, NOT the nav. The menu panel slides; nav stays put.
         switch ( $position ) {
             case 'right':
-                $menu_css      = "position: fixed; top: 60px; right: 0; height: calc(100vh - 60px); width: 300px; transform: translateX(100%); transition: transform 0.3s ease; overflow-y: auto; padding: 1rem 1.25rem; z-index: 999;";
-                $menu_open_css = "transform: translateX(0); box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);";
+                $menu_position_props = "position: fixed;\n  z-index: 999;\n  overflow-y: auto;\n  padding-top: 80px;\n  background: #ffffff;\n  top: 0;\n  right: 0;\n  left: auto;\n  width: 100%;\n  height: 100dvh;\n  transform: translateX(100%);\n  transition: transform 0.2s ease-in-out;";
+                $menu_open_css       = 'transform: translateX(0);';
                 break;
             case 'top':
-                $menu_css      = "position: fixed; top: 60px; left: 0; right: 0; max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 1.25rem; z-index: 999;";
-                $menu_open_css = "max-height: calc(100vh - 60px); padding: 1rem 1.25rem; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);";
-                break;
-            case 'full':
-                $menu_css      = "position: fixed; inset: 0; display: flex; align-items: flex-start; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; padding: 5rem 2rem 2rem; overflow-y: auto; z-index: 999;";
-                $menu_open_css = "opacity: 1; visibility: visible;";
+                $menu_position_props = "position: fixed;\n  z-index: 999;\n  overflow-y: auto;\n  padding-top: 80px;\n  background: #ffffff;\n  top: 0;\n  left: 0;\n  width: 100%;\n  max-height: 100dvh;\n  transform: translateY(-100%);\n  transition: transform 0.2s ease-in-out;";
+                $menu_open_css       = 'transform: translateY(0);';
+                if ( 'accordion' === $submenu_behavior ) {
+                    $menu_position_props .= "\n  height: auto;";
+                } elseif ( 'slide' === $submenu_behavior ) {
+                    $menu_position_props .= "\n  height: 100dvh;";
+                }
                 break;
             case 'left':
             default:
-                $menu_css      = "position: fixed; top: 60px; left: 0; height: calc(100vh - 60px); width: 300px; transform: translateX(-100%); transition: transform 0.3s ease; overflow-y: auto; padding: 1rem 1.25rem; z-index: 999;";
-                $menu_open_css = "transform: translateX(0); box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);";
+                $menu_position_props = "position: fixed;\n  z-index: 999;\n  overflow-y: auto;\n  padding-top: 80px;\n  background: #ffffff;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100dvh;\n  transform: translateX(-100%);\n  transition: transform 0.2s ease-in-out;";
+                $menu_open_css       = 'transform: translateX(0);';
                 break;
         }
 
-        // Menu list styles
-        $menu_list_css = "flex-direction: column; gap: 0;";
-        $link_css      = "padding: 1rem 0; border-bottom: 1px solid #f0f0f1;";
-        if ( 'full' === $position ) {
-            $menu_list_css = "flex-direction: column; gap: 2rem; text-align: center;";
-            $link_css      = "font-size: 1.5rem; padding: 1rem 0;";
+        // Slide mode adds overflow: hidden on __menu
+        if ( 'slide' === $submenu_behavior ) {
+            $menu_position_props .= "\n  overflow: hidden;";
         }
 
-        // A5: Submenu link dash inset on mobile
-        $submenu_dash = "\n  {$s}__submenu-link { padding-left: 1.5rem; position: relative; }"
-            . "\n  {$s}__submenu-link::before { content: '\\2014'; position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: #2c3338; font-size: 0.75rem; }";
+        // =====================================================================
+        // STYLE 1: 'nav-all' — selector '.{cls}' (the ONLY style with this selector)
+        //
+        // Contains: base nav properties + mobile child-element overrides + desktop layout.
+        // The nav stays in normal flow. Position:fixed is on __menu, not here.
+        // =====================================================================
 
-        // Submenu mobile CSS — depends on both depth and behavior
-        // A1: No background colours on submenus
-        $submenu_mobile = '';
-        if ( $mobile_depth > 0 ) {
-            $submenu_base = "{$s}__submenu { position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none; margin-top: 0.5rem; border-radius: 4px; min-width: 0;";
+        // Base nav properties (all widths)
+        $nav_css = "background: #ffffff;\ncolor: #2c3338;\n";
 
-            if ( 'always' === $submenu_behavior ) {
-                // Always show — submenus expanded by default
-                $submenu_mobile = "\n  {$submenu_base} max-height: none; overflow: visible; }" . $submenu_dash;
-            } elseif ( 'clickable' === $submenu_behavior ) {
-                // Clickable — submenus hidden on mobile (links navigate, no toggle)
-                $submenu_mobile = "\n  {$s}__submenu { display: none; }";
-            } else {
-                // Accordion — collapsed by default, toggle with .is-open
-                // A3: Chevron toggle button styles
-                $submenu_mobile = "\n  {$submenu_base} max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }"
-                    . "\n  {$s}__menu-item.is-open > {$s}__submenu,"
-                    . "\n  {$s}__submenu-item.is-open > {$s}__submenu { max-height: 500px; }"
-                    . "\n  {$s}__menu-item.has-submenu,"
-                    . "\n  {$s}__submenu-item.has-submenu { position: relative; }"
-                    . "\n  .has-submenu > {$s}__menu-link { padding-right: 3rem; }"
-                    . "\n  {$s}__submenu-toggle { appearance: none; background: none; border: none; padding: 1rem; cursor: pointer; position: absolute; right: 0; top: 0; height: 100%; display: flex; align-items: center; }"
-                    . "\n  {$s}__submenu-toggle::after { content: ''; display: block; width: 8px; height: 8px; border-right: 2px solid #2c3338; border-bottom: 2px solid #2c3338; transform: rotate(45deg); transition: transform 0.3s ease; }"
-                    . "\n  .is-open > {$s}__submenu-toggle::after { transform: rotate(-135deg); }"
-                    . $submenu_dash;
-            }
-        } else {
-            $submenu_mobile = "\n  {$s}__submenu { display: none; }";
-        }
-
-        // Build the complete @media block as a raw CSS string.
-        // This gets injected as a standalone <style> block in the ETCH output.
-        $responsive_css = "@media (max-width: {$breakpoint}px) {\n"
+        // Mobile @media — child elements only (all are descendants of nav)
+        // Nav needs position:relative so the absolutely-positioned hamburger
+        // is positioned relative to the nav, not the viewport.
+        $nav_css .= "@media (max-width: {$breakpoint}px) {\n"
+            . "  position: relative;\n  z-index: 1000;\n"
             . "  {$s}__hamburger { display: flex; }\n"
-            . "  {$s}__menu { {$menu_css} }\n"
-            . "  {$s}__menu.is-open { {$menu_open_css} }\n"
-            . "  {$s}__menu-list { {$menu_list_css} }\n"
-            . "  {$s}__menu-link { {$link_css} }\n"
-            . $submenu_mobile . "\n"
+            . "  {$s}__list { flex-direction: column; border-top: 1px solid #f0f0f1; }\n"
+            . "  {$s}__item { width: 100%; border-bottom: 1px solid #f0f0f1; }\n"
+            . "  .has-submenu > {$s}__link { padding-right: calc(50px + 1.25rem); }\n"
+            . "  {$s}__submenu-toggle { display: flex; position: absolute; top: 0; right: 0; width: 50px; height: 50px; background: transparent; border: none; cursor: pointer; padding: 0; z-index: 1; align-items: center; justify-content: center; }\n"
+            . "  {$s}__submenu-icon { display: block; width: 8px; height: 8px; border-right: 2px solid #2c3338; border-bottom: 2px solid #2c3338; transform: rotate(45deg); transition: transform 0.2s ease-in-out; }\n"
+            . "  {$s}__sub-menu { border-top: 1px solid #f0f0f1; }\n"
+            . "  {$s}__sub-menu {$s}__item:last-of-type { border-bottom: 0; }\n"
+            . "  {$s}__sub-menu {$s}__item a { padding-left: 40px; }\n"
+            . "  {$s}__sub-menu {$s}__sub-menu {$s}__item a { padding-left: 70px; }\n";
+
+        // Behaviour-specific child-element styles (still inside mobile @media)
+        if ( 'accordion' === $submenu_behavior ) {
+            $nav_css .= "  {$s}__sub-menu { display: none; max-height: 0; overflow: hidden; transition: max-height 0.2s ease-in-out; }\n"
+                . "  {$s}__item--submenu-open > {$s}__sub-menu { display: block; max-height: 1000px; }\n"
+                . "  {$s}__item--submenu-open > {$s}__submenu-toggle {$s}__submenu-icon { transform: rotate(-135deg); }\n";
+        } elseif ( 'slide' === $submenu_behavior ) {
+            // Hide ONLY the original __list (direct child of __menu), not the
+            // cloned __list elements inside sliding panels.
+            $nav_css .= "  {$s}__menu > {$s}__list { display: none; }\n"
+                // Sliding panel lists must be visible
+                . "  .sliding-panel {$s}__list { display: flex; flex-direction: column; }\n"
+                . "  .sliding-nav-panels { position: absolute; top: 80px; left: 0; width: 100%; height: calc(100% - 80px); border-top: 1px solid #f0f0f1; }\n"
+                . "  .sliding-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateX(100%); opacity: 0; transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out; pointer-events: none; overflow-y: auto; }\n"
+                . "  .sliding-panel.active { transform: translateX(0); opacity: 1; pointer-events: auto; }\n"
+                . "  .sliding-panel.previous { transform: translateX(-100%); opacity: 0; pointer-events: none; }\n"
+                . "  {$s}__submenu-icon { transform: rotate(-45deg); }\n"
+                . "  {$s}__back { display: block; border-bottom: 1px solid #f0f0f1; }\n"
+                . "  {$s}__back-button { width: 100%; padding: 0.75rem 1.25rem; background: #ffffff; border: none; text-align: left; font-size: 1rem; color: #2c3338; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }\n"
+                . "  {$s}__back-icon { display: inline-block; width: 8px; height: 8px; border-left: 2px solid #2c3338; border-bottom: 2px solid #2c3338; transform: rotate(45deg); }\n";
+        }
+
+        $nav_css .= "}\n";
+
+        // Desktop @media — nav layout + child elements
+        $nav_css .= "@media (min-width: {$breakpoint_up}px) {\n"
+            . "  position: relative;\n  width: 100%;\n"
+            . "  {$s}__list { flex-direction: row; gap: 0.5rem; align-items: center; }\n"
+            . "}";
+
+        // =====================================================================
+        // STYLE 2: 'menu-all' — selector '.{cls}__menu' (unique selector)
+        //
+        // The __menu wrapper div — gets position:fixed + transform on mobile.
+        // The hamburger is a sibling, so it stays visible.
+        // =====================================================================
+        $menu_css = "@media (max-width: {$breakpoint}px) {\n"
+            . "  {$menu_position_props}\n"
+            . "}";
+
+        // =====================================================================
+        // STYLE 3: 'menu-mobile-open' — selector '.{cls}__menu.is-open' (unique)
+        //
+        // When JS adds .is-open to __menu, it slides into view.
+        // =====================================================================
+        $menu_open_state_css = "@media (max-width: {$breakpoint}px) {\n"
+            . "  {$menu_open_css}\n"
             . "}";
 
         return array(
-            'mobile-responsive' => array(
+            // Nav base + child element responsive CSS (only style with .{cls} selector)
+            'nav-all' => array(
                 'selector'   => $s,
                 'collection' => 'default',
-                'css'        => $responsive_css,
+                'css'        => $nav_css,
+            ),
+            // Menu panel positioning (unique selector .{cls}__menu)
+            'menu-all' => array(
+                'selector'   => $s . '__menu',
+                'collection' => 'default',
+                'css'        => $menu_css,
+            ),
+            // Menu panel open state (unique selector .{cls}__menu.is-open)
+            'menu-mobile-open' => array(
+                'selector'   => $s . '__menu.is-open',
+                'collection' => 'default',
+                'css'        => $menu_open_state_css,
             ),
         );
     }
