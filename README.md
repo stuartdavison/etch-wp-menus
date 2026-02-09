@@ -13,14 +13,14 @@ Etch WP Menus is a WordPress plugin that provides an intuitive admin interface f
 ## Features
 
 - **Two Implementation Approaches**:
-  - **Direct Loop**: Binds to WordPress menus via `{#loop options.menus.{slug} as item}`
-  - **Component**: Reusable components via `{#loop props.menuItems as item}`
+    - **Direct Loop**: Binds to WordPress menus via `{#loop options.menus.{slug} as item}`
+    - **Component**: Reusable components via `{#loop props.menuItems as item}`
 
 - **ETCH JSON Block Tree**: Generates `etch/element`, `etch/loop`, `etch/condition`, and `etch/text` blocks — fully editable in ETCH's Structure Panel
 
 - **Pre-computed State Fields**:
-  - `item.state_classes` — utility classes for `<li>` elements (`has-submenu`, `current-parent`)
-  - `item.link_classes` — utility classes for `<a>` elements (`current-page`)
+    - `item.state_classes` — utility classes for `<li>` elements (`has-submenu`, `current-parent`)
+    - `item.link_classes` — utility classes for `<a>` elements (`current-page`)
 
 - **CSS Custom Properties**: All styling controlled via `:root` tokens (`--menu-clr-text`, `--menu-padding-x`, etc.) — easy to customise without editing generated CSS
 
@@ -33,19 +33,19 @@ Etch WP Menus is a WordPress plugin that provides an intuitive admin interface f
 - **Three Menu Positions**: Left, Right, Top
 
 - **Two Submenu Behaviors** (mobile only — desktop always uses hover with delay):
-  - **Accordion**: Click chevron toggle to expand/collapse with animated chevron rotation
-  - **Slide**: Horizontal panel navigation with back buttons (Netflix-style)
+    - **Accordion**: Click chevron toggle to expand/collapse with animated chevron rotation
+    - **Slide**: Horizontal panel navigation with back buttons (Netflix-style)
 
 - **Desktop Features**:
-  - Hover-activated dropdowns with configurable delay (desktop media query only)
-  - Smart edge detection (auto-cascades left when near viewport edge)
-  - `focus-within` support for keyboard submenu reveal
+    - Hover-activated dropdowns with configurable delay (desktop media query only)
+    - Smart edge detection (auto-cascades left when near viewport edge)
+    - `focus-within` support for keyboard submenu reveal
 
 - **Accessibility (WCAG 2.1 Level AA)**:
-  - Full keyboard navigation (Arrow keys, Enter, Escape)
-  - Proper ARIA attributes (`aria-haspopup`, `aria-expanded`, `aria-current`)
-  - Focus management (menu open/close, submenu transitions)
-  - Screen reader optimised with `role="menubar"`, `role="menu"`, `role="menuitem"`
+    - Full keyboard navigation (Arrow keys, Enter, Escape)
+    - Proper ARIA attributes (`aria-haspopup`, `aria-expanded`, `aria-current`)
+    - Focus management (menu open/close, submenu transitions)
+    - Screen reader optimised with `role="menubar"`, `role="menu"`, `role="menuitem"`
 
 - **ES6 JavaScript**: Modern `class AccessibleNavigation` pattern supporting multiple instances
 
@@ -105,6 +105,7 @@ nav (root block)
 ```
 
 Key architectural decisions:
+
 - **Hamburger inside `<nav>` but outside `__menu`** — stays visible when `__menu` slides off-screen
 - **`__menu` wrapper** gets `position: fixed` + `transform` on mobile (not the nav)
 - **`is-open` class** applied to `__menu` (not `<nav>`)
@@ -114,7 +115,7 @@ Key architectural decisions:
 ## Support
 
 **Website:** https://bbg.digital
-**Email:** support@bbg.digital
+**Email:** support@builtbygeeks.co.uk
 
 ## License
 
